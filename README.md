@@ -14,3 +14,18 @@
 
 ## Project Bookmarks
 - [Project Board](https://21tqs2425.atlassian.net/jira/software/projects/SCRUM/boards/1)
+
+## SonarQube run
+
+
+ ```bash 
+mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=ChargeControl \
+  -Dsonar.projectName='ChargeControl' \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.token=sqp_ea1bbf0b75f7d7de981c00e656fbfa6f911e3975
+ ``` 
+
+http://localhost:9000/tutorials?id=ChargerControl&selectedTutorial=local
+
+ou dando commit para a main (ter ngrok a rodar)
