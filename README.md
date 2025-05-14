@@ -27,3 +27,5 @@ mvn clean verify sonar:sonar \
  ``` 
 
 http://localhost:9000/tutorials?id=ChargerControl&selectedTutorial=local
+
+ou dando commit para a main (ter ngrok a rodar)
