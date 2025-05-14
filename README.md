@@ -14,3 +14,11 @@
 
 ## Project Bookmarks
 - [Project Board](https://21tqs2425.atlassian.net/jira/software/projects/SCRUM/boards/1)
+
+## SonarQube run
+
+mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=ChargerControl \
+  -Dsonar.projectName='ChargerControl' \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.token=sqp_ab526bc3359b60d4955b8fd2d19812fa423f4d43
