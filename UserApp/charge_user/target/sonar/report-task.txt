@@ -1,6 +1,6 @@
-projectKey=ChargerControl
+projectKey=ChargeControl
 serverUrl=http://localhost:9000
 serverVersion=25.5.0.107428
-dashboardUrl=http://localhost:9000/dashboard?id=ChargerControl
-ceTaskId=6372f99e-34f7-4d54-8e03-34ac3528476d
-ceTaskUrl=http://localhost:9000/api/ce/task?id=6372f99e-34f7-4d54-8e03-34ac3528476d
+dashboardUrl=http://localhost:9000/dashboard?id=ChargeControl
+ceTaskId=991e3a63-390a-4576-ae38-8503a4b19e0a
+ceTaskUrl=http://localhost:9000/api/ce/task?id=991e3a63-390a-4576-ae38-8503a4b19e0a

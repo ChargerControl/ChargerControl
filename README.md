@@ -20,10 +20,10 @@
 
  ```bash 
 mvn clean verify sonar:sonar \
-  -Dsonar.projectKey=ChargerControl \
-  -Dsonar.projectName='ChargerControl' \
+  -Dsonar.projectKey=ChargeControl \
+  -Dsonar.projectName='ChargeControl' \
   -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.token=sqp_ab526bc3359b60d4955b8fd2d19812fa423f4d43
+  -Dsonar.token=sqp_ea1bbf0b75f7d7de981c00e656fbfa6f911e3975
  ``` 
 
 http://localhost:9000/tutorials?id=ChargerControl&selectedTutorial=local
