@@ -1,40 +1,35 @@
-name: Build
+name: SonarCloud Analysis
 
 on:
   push:
     branches:
+      - SCRUM-24-integrate-sonar-qube
+  pull_request:
+    branches:
       - main
 
-
 jobs:
-  build:
-    name: Build and analyze
+  sonarcloud:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Check out the code
+        uses: actions/checkout@v3
+
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache SonarCloud dependencies
+        uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-      - name: Build and analyze
-        working-directory: UserApp/charge_user
+
+      - name: Run SonarCloud Analysis
+        uses: sonarsource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://3d39-84-91-23-78.ngrok-free.app
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ChargeController -Dsonar.projectName='ChargeController'
