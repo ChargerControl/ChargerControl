@@ -17,10 +17,9 @@
 
 ## SonarQube run
 
-mvn clean verify sonar:sonar \
-  -Dsonar.projectKey=ChargerControl \
-  -Dsonar.projectName='ChargerControl' \
-  -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.token=sqp_ab526bc3359b60d4955b8fd2d19812fa423f4d43
+
+ ```bash 
+ mvn clean verify sonar:sonar \ -Dsonar.projectKey=ChargerControl \ -Dsonar.projectName='ChargerControl' \ -Dsonar.host.url=http://localhost:9000 \ -Dsonar.token=sqp_ab526bc3359b60d4955b8fd2d19812fa423f4d43
+ ``` 
 
 http://localhost:9000/tutorials?id=ChargerControl&selectedTutorial=local
