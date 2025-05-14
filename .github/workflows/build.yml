@@ -32,4 +32,4 @@ jobs:
       - name: Run SonarCloud Analysis
         uses: sonarsource/sonarcloud-github-action@v2
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: sqp_35db7ac48cb45d9fd6658c88f063e64ddde7f0b8
