@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - SCRUM-24-integrate-sonar-qube
+      - main
 
 
 jobs:
