@@ -36,5 +36,5 @@ jobs:
         working-directory: UserApp/charge_user
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: https://3d39-84-91-23-78.ngrok-free.app
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=ChargeController -Dsonar.projectName='ChargeController'
