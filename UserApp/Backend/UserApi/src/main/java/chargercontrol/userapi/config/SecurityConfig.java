@@ -19,7 +19,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
 import java.util.List;
 
 @Configuration
@@ -32,6 +31,12 @@ public class SecurityConfig {
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
+    private static final String[] SWAGGER_WHITELIST = {
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -39,13 +44,16 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(requests -> requests
                         // Permit all authentication endpoints
-                        .requestMatchers("/apiV1/**").permitAll()
-                        // Any other request requires authentication
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/apiV1/user/register", "/apiV1/user/login").permitAll()
+                        // Permit Swagger documentation endpoints
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                        // Any other request requires authentication for /apiV1/**
+                        .requestMatchers("/apiV1/**").authenticated()
+                        // Any other request requires authentication (if any other non-apiV1 paths
+                        // exist)
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         // Add JWT filter before the standard authentication filter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
