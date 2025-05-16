@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "User") // Consider renaming table to "users" for convention
 public class User {
 
     @Id
@@ -23,12 +24,10 @@ public class User {
     @Pattern(regexp = "^[a-zA-Z\\s-']+$", message = "Name must contain only letters, spaces, hyphens and apostrophes")
     private String name;
 
-
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     @Size(max = 255, message = "Email must not exceed 255 characters")
     private String email;
-
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
@@ -36,4 +35,7 @@ public class User {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Car> cars = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookSlot> bookSlots;
 }
