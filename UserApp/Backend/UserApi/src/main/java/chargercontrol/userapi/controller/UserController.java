@@ -3,6 +3,7 @@ package chargercontrol.userapi.controller;
 import chargercontrol.userapi.jwt.JwtUtil;
 import chargercontrol.userapi.model.AuthRequest;
 import chargercontrol.userapi.model.AuthResponse;
+import chargercontrol.userapi.model.RegisterRequest;
 import chargercontrol.userapi.model.User;
 import chargercontrol.userapi.repository.UserRepository;
 import chargercontrol.userapi.service.UserService;
@@ -39,20 +40,37 @@ public class UserController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    @Operation(summary = "Register a new user", responses = {
-            @ApiResponse(responseCode = "200", description = "User registered successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Registration failed or email already in use", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class)))
-    })
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody User user) {
+    @Operation(summary = "Register a new user",
+              requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                  description = "User registration details",
+                  required = true,
+                  content = @Content(mediaType = "application/json",
+                                   schema = @Schema(implementation = RegisterRequest.class))
+              ),
+              responses = {
+                  @ApiResponse(responseCode = "200",
+                             description = "User registered successfully",
+                             content = @Content(mediaType = "application/json",
+                                             schema = @Schema(implementation = AuthResponse.class))),
+                  @ApiResponse(responseCode = "400",
+                             description = "Registration failed or email already in use",
+                             content = @Content(mediaType = "application/json",
+                                             schema = @Schema(implementation = AuthResponse.class)))
+              })
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             // Check if email already exists
-            if (userRepository.findByEmail(user.getEmail()) != null) {
+            if (userRepository.findByEmail(registerRequest.getEmail()) != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new AuthResponse(null, "Email already in use"));
             }
 
-            User savedUser = userRepository.save(user);
+            User user = new User();
+            user.setEmail(registerRequest.getEmail());
+            user.setName(registerRequest.getName());
+            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
+            User savedUser = userRepository.save(user);
             String jwt = jwtUtil.generateToken(savedUser.getEmail());
 
             return ResponseEntity.ok(new AuthResponse(jwt, null));

@@ -41,5 +41,6 @@ public class ChargingPort {
 
     // Consider adding a port identifier within the station, e.g., portNumber
     @Column(nullable = false)
+    @NotNull(message = "Port identifier cannot be null")
     private String portIdentifier; // e.g., "Port 1", "A01"
 }

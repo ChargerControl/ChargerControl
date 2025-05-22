@@ -81,10 +81,10 @@ public class BookSlotController {
             @ApiResponse(responseCode = "200", description = "Bookings found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookSlot.class)))
     })
     public ResponseEntity<List<BookSlot>> getBookingsByStationIdAndRange(
-            @Parameter(description = "ID of the station whose bookings to retrieve") @PathVariable Long charginPortId,
+            @Parameter(description = "ID of the station whose bookings to retrieve") @PathVariable Long chargingPortId,
             @Parameter(description = "Start time for the booking range (ISO DATE_TIME format)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @Parameter(description = "End time for the booking range (ISO DATE_TIME format)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
-        List<BookSlot> bookings = bookSlotService.getBookingsByChargingPortIdAndTimeRange(charginPortId, startTime,
+        List<BookSlot> bookings = bookSlotService.getBookingsByChargingPortIdAndTimeRange(chargingPortId, startTime,
                 endTime);
         return ResponseEntity.ok(bookings);
     }

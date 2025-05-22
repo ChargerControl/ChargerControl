@@ -37,5 +37,6 @@ public class User {
     private List<Car> cars = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookSlot> bookSlots;
+    private List<BookSlot> bookSlots = new ArrayList<>();
 }
+
