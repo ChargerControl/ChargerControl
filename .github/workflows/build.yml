@@ -41,7 +41,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build and analyze
-        working-directory: UserApp/charge_user
+        working-directory: UserApp
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
