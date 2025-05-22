@@ -24,17 +24,24 @@ public class UserService {
 
     public List<Car> getCarsByEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);
-        if (user.isEmpty()) {
+        if (user.isPresent()) {
             return user.get().getCars();
         } else {
             logger.error("User not found with email: {}", email);
-            return null;
+            throw new RuntimeException("User not found with email: " + email);
         }
     }
 
-
-
     public User createUser(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("User already exists");
         }

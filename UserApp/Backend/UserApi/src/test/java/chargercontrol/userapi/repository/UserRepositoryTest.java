@@ -1,10 +1,12 @@
 package chargercontrol.userapi.repository;
 
 import chargercontrol.userapi.model.User;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
 
@@ -85,5 +87,120 @@ class UserRepositoryTest {
         assertTrue(found.isPresent());
         assertEquals("alice.johnson@example.com", found.get().getEmail());
         assertEquals("Alice Johnson", found.get().getName());
+    }
+
+    @Test
+    void saveUser_DuplicateEmail() {
+        // First user
+        User user1 = new User();
+        user1.setName("John Doe");
+        user1.setEmail("duplicate@example.com");
+        user1.setPassword("password123");
+        entityManager.persist(user1);
+        entityManager.flush();
+
+        // Second user with same email
+        User user2 = new User();
+        user2.setName("Jane Doe");
+        user2.setEmail("duplicate@example.com");
+        user2.setPassword("password456");
+
+        assertThrows(DataIntegrityViolationException.class, () -> {
+            userRepository.save(user2);
+            entityManager.flush();
+        });
+    }
+
+    @Test
+    void saveUser_NullEmail() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setPassword("password123");
+        // email is null
+
+        assertThrows(ConstraintViolationException.class, () -> {
+            userRepository.save(user);
+            entityManager.flush();
+        });
+    }
+
+    @Test
+    void saveUser_EmptyEmail() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("");
+        user.setPassword("password123");
+
+        assertThrows(ConstraintViolationException.class, () -> {
+            userRepository.save(user);
+            entityManager.flush();
+        });
+    }
+
+    @Test
+    void saveUser_InvalidEmail() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("not-an-email");
+        user.setPassword("password123");
+
+        assertThrows(ConstraintViolationException.class, () -> {
+            userRepository.save(user);
+            entityManager.flush();
+        });
+    }
+
+    @Test
+    void deleteById_NonExistent() {
+        assertDoesNotThrow(() -> userRepository.deleteById(999L));
+    }
+
+    @Test
+    void updateUser_Success() {
+        User user = new User();
+        user.setName("Original Name");
+        user.setEmail("original@example.com");
+        user.setPassword("password123");
+        entityManager.persist(user);
+        entityManager.flush();
+
+        user.setName("Updated Name");
+        User updatedUser = userRepository.save(user);
+        entityManager.flush();
+
+        User foundUser = entityManager.find(User.class, user.getId());
+        assertEquals("Updated Name", foundUser.getName());
+        assertEquals("original@example.com", foundUser.getEmail());
+    }
+
+    @Test
+    void updateUser_InvalidData() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("john@example.com");
+        user.setPassword("password123");
+        entityManager.persist(user);
+        entityManager.flush();
+
+        user.setEmail("");  // Invalid email
+
+        assertThrows(ConstraintViolationException.class, () -> {
+            userRepository.save(user);
+            entityManager.flush();
+        });
+    }
+
+    @Test
+    void findByEmail_CaseInsensitive() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("John.Doe@Example.com");
+        user.setPassword("password123");
+        entityManager.persist(user);
+        entityManager.flush();
+
+        Optional<User> found = userRepository.findByEmail("john.doe@example.com");
+        assertTrue(found.isPresent());
+        assertEquals("John.Doe@Example.com", found.get().getEmail());
     }
 }

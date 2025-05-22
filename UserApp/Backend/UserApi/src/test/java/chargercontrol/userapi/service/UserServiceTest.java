@@ -59,6 +59,37 @@ class UserServiceTest {
     }
 
     @Test
+    void getCarsByEmail_Success() {
+        Car car1 = new Car();
+        car1.setId(1L);
+        car1.setModel("Tesla Model S");
+        Car car2 = new Car();
+        car2.setId(2L);
+        car2.setModel("Ford Mustang");
+        List<Car> carList = Arrays.asList(car1, car2);
+
+        testUser.setCars(carList);
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+
+        List<Car> cars = userService.getCarsByEmail(testUser.getEmail());
+
+        assertNotNull(cars);
+        assertEquals(2, cars.size());
+        assertTrue(cars.contains(car1));
+        assertTrue(cars.contains(car2));
+        verify(userRepository).findByEmail(testUser.getEmail());
+    }
+
+    @Test
+    void userExists_Success() {
+        when(userRepository.existsByEmail(testUser.getEmail())).thenReturn(true);
+
+        boolean exists = userService.userExists(testUser.getEmail());
+        assertTrue(exists);
+        verify(userRepository).existsByEmail(testUser.getEmail());
+    }
+
+    @Test
     void createUser_DuplicateEmail() {
         when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
 
@@ -66,6 +97,43 @@ class UserServiceTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    @Test
+    void createUser_PasswordEncoderFailure() {
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(any())).thenThrow(new RuntimeException("Encoding failed"));
+
+        assertThrows(RuntimeException.class, () -> userService.createUser(testUser));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void createUser_RepositorySaveFailure() {
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenThrow(new RuntimeException("Database error"));
+
+        assertThrows(RuntimeException.class, () -> userService.createUser(testUser));
+    }
+
+    @Test
+    void createUser_NullUser() {
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(null));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void createUser_InvalidEmail() {
+        testUser.setEmail("");
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(testUser));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void createUser_InvalidPassword() {
+        testUser.setPassword("");
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(testUser));
+        verify(userRepository, never()).save(any());
+    }
 
     @Test
     void getUserById_Success() {
@@ -102,7 +170,14 @@ class UserServiceTest {
         assertTrue(users.stream().anyMatch(u -> u.getEmail().equals("jane.doe@example.com")));
     }
 
-@Test
+    @Test
+    void getAllUsers_RepositoryFailure() {
+        when(userRepository.findAll()).thenThrow(new RuntimeException("Database error"));
+
+        assertThrows(RuntimeException.class, () -> userService.getAllUsers());
+    }
+
+    @Test
     void updateUser_Success() {
         // Prepare updated user data
         User updatedUser = new User();
@@ -177,6 +252,13 @@ class UserServiceTest {
         when(userRepository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> userService.getUserByEmail("nonexistent@example.com"));
+    }
+
+    @Test
+    void getUserByEmail_RepositoryFailure() {
+        when(userRepository.findByEmail(any())).thenThrow(new RuntimeException("Database connection failed"));
+
+        assertThrows(RuntimeException.class, () -> userService.getUserByEmail(testUser.getEmail()));
     }
 
     @Test
