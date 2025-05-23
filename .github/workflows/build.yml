@@ -41,7 +41,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Start database container
-        run: docker-compose up -d mysql-container
+        run: sudo docker-compose up -d mysql-container
 
       - name: Build and analyze UserAPI
         working-directory: UserApp/Backend/UserApi
