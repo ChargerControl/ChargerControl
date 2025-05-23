@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './Components/Authentication/login';
 import Register from './Components/Authentication/register';
 import Navbar from './Components/Navbar';
-import OperatorStation from './Components/Station_page/ChargingStationDashboard';
+import OperatorStation from './Components/pages/ChargingStationDashboard';
 import './App.css';
 
 function App() {
