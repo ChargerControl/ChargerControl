@@ -1,0 +1,70 @@
+version: '3.2'
+
+services:
+  mysql-container:
+    image: mysql
+    container_name: mysql-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: chargerControl
+      MYSQL_USER: chargerControl
+      MYSQL_PASSWORD: chargerControl
+    ports:
+      - "3306:3306"
+    networks:
+      - chargerControl-network
+
+  operator-app-frontend:
+    build: ./OperatorApp/Frontend/operator-app
+    container_name: operator-app-frontend
+    ports:
+      - "3001:80"
+    networks:
+      - chargerControl-network
+    depends_on:
+      - operator-app-backend
+
+  operator-app-backend:
+    build: ./OperatorApp/Backend/OperatorApi
+    container_name: operator-app-backend
+    ports:
+      - "8001:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-container:3306/chargerControl?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=chargerControl
+      - SPRING_DATASOURCE_PASSWORD=chargerControl
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - chargerControl-network
+    depends_on:
+      - mysql-container
+
+  user-app-frontend:
+    build: ./UserApp/Frontend/user-charge
+    container_name: user-app-frontend
+    ports:
+      - "3000:80" # Host:Container
+    networks:
+      - chargerControl-network
+    depends_on:
+      - user-app-backend
+
+  user-app-backend:
+    build: ./UserApp/Backend/UserApi
+    container_name: user-app-backend
+    ports:
+      - "8000:8080" # Assuming Spring Boot runs on 8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-container:3306/chargerControl?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=chargerControl
+      - SPRING_DATASOURCE_PASSWORD=chargerControl
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - chargerControl-network
+    depends_on:
+      - mysql-container
+
+networks:
+  chargerControl-network:
+    driver: bridge
