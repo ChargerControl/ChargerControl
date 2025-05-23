@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "User") // Consider renaming table to "users" for convention
+@Table(name = "User") 
 public class User {
 
     @Id

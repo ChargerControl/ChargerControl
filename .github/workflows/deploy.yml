@@ -6,4 +6,21 @@ jobs:
   test:
     runs-on: self-hosted
     steps:
+<<<<<<< Updated upstream
       - run: echo "Hello from self-hosted runner!"
+=======
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: SSH into the VM and deploy
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSW }}
+          script: |
+            echo "Deploying to VM..."
+            cd ~/actions-runner/_work/ChargerControl/ChargerControl
+            docker compose down --remove-orphans
+            docker compose up --build -d
+>>>>>>> Stashed changes
