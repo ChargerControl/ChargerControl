@@ -1,0 +1,22 @@
+FROM maven:3.9.9 AS build
+
+WORKDIR /OperatorApp/Backend/OperatorApi
+
+COPY pom.xml .
+
+RUN mvn dependency:go-offline
+
+COPY src ./src
+
+RUN mvn package -DskipTests
+
+# Etapa de Execução
+FROM openjdk:25-jdk-slim
+
+WORKDIR /OperatorApp/Backend/OperatorApi
+
+COPY --from=build /OperatorApp/Backend/OperatorApi/target/*.jar ./app.jar
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "./app.jar"]
