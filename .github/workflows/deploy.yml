@@ -24,6 +24,6 @@ jobs:
           script: |
             echo "Deploying to VM..."
             cd ~/actions-runner/_work/ChargerControl/ChargerControl
-            docker compose down --remove-orphans
-            docker compose up --build -d
+            docker-compose down --remove-orphans
+            docker-compose up --build -d
 
