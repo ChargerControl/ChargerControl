@@ -1,92 +1,73 @@
 // ChargingStationDashboard.jsx (Main Component)
-import React, { useState } from 'react';
-import { Box, Card, Tab, Tabs, CardContent } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, Tab, Tabs, CardContent, CircularProgress, Alert } from '@mui/material';
 import Header from '../Station_page/Header';
 import StatsCards from '../Station_page/StatsCard';
-import AlertsPanel from '../Station_page/AlertsPanel';
 import StationsTable from '../Station_page/StationsTable';
 import AddStationDialog from '../Station_page/AddStationDialog';
-import EditStationDialog from '../Station_page/EditStationDialog';
 import ReportsTab from '../Station_page/ReportsTab';
 import SettingsTab from '../Station_page/SettingsTab';
-
-
-
 
 const ChargingStationDashboard = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [openAddStation, setOpenAddStation] = useState(false);
-  const [openEditStation, setOpenEditStation] = useState(false);
   const [selectedStation, setSelectedStation] = useState(null);
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [newStation, setNewStation] = useState({
     name: '',
     location: '',
-    type: '',
+    chargingType: 'AC_STANDARD',
     power: '',
     coordinates: '',
-    price: '',
-    availability: ''
+    totalPorts: '1'
   });
 
-  // Data
-  const stats = {
-    onlineStations: '3/4',
-    todayRevenue: '€559',
-    co2Saved: '2.5t',
-    activeAlerts: '3'
+  // Função para buscar estações da API
+  const fetchStations = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:8080/apiV1/stations');
+      
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setStations(data);
+      setError('');
+    } catch (err) {
+      console.error('Erro ao buscar estações:', err);
+      setError('Erro ao carregar estações. Verifique se o servidor está funcionando.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const alerts = [
-    { id: 1, type: 'error', message: 'Estação Porto-Centro offline há 2h', time: '14:30' },
-    { id: 2, type: 'warning', message: 'Estação Matosinhos com uso excessivo', time: '13:15' },
-    { id: 3, type: 'info', message: 'Manutenção programada para Gaia-Sul amanhã', time: '12:00' }
-  ];
+  // Carregar estações ao montar o componente
+  useEffect(() => {
+    fetchStations();
+  }, []);
 
-  const stations = [
-    {
-      id: 1,
-      name: 'Porto Centro',
-      location: 'Rua de Santa Catarina, Porto',
-      status: 'online',
-      type: 'DC Fast',
-      power: '150kW',
-      usage: 85,
-      revenue: '€342',
-      co2Saved: '1.2t'
-    },
-    {
-      id: 2,
-      name: 'Matosinhos Mall',
-      location: 'Shopping Matosinhos, Matosinhos',
-      status: 'busy',
-      type: 'AC Standard',
-      power: '22kW',
-      usage: 100,
-      revenue: '€128',
-      co2Saved: '0.8t'
-    },
-    {
-      id: 3,
-      name: 'Gaia Sul',
-      location: 'Av. da República, Vila Nova de Gaia',
-      status: 'offline',
-      type: 'DC Fast',
-      power: '100kW',
-      usage: 0,
-      revenue: '€0',
-      co2Saved: '0t'
-    },
-    {
-      id: 4,
-      name: 'Campanhã Station',
-      location: 'Estação Campanhã, Porto',
-      status: 'online',
-      type: 'AC Standard',
-      power: '11kW',
-      usage: 45,
-      revenue: '€89',
-      co2Saved: '0.5t'
-    }
+  // Calcular estatísticas baseadas nos dados reais
+  const calculateStats = () => {
+    const totalStations = stations.length;
+    const onlineStations = stations.filter(s => s.available).length;
+    
+    return {
+      onlineStations: `${onlineStations}/${totalStations}`,
+      todayRevenue: '€559', // Placeholder - seria calculado com dados de transações
+      co2Saved: '2.5t', // Placeholder - seria calculado baseado no uso
+      activeAlerts: '0' // Placeholder - seria baseado em alertas reais
+    };
+  };
+
+  const stats = calculateStats();
+
+  // Alertas fictícios (poderiam vir da API também)
+  const alerts = [
+    { id: 1, type: 'info', message: `${stations.length} estações carregadas com sucesso`, time: new Date().toLocaleTimeString() }
   ];
 
   // Handlers
@@ -96,27 +77,20 @@ const ChargingStationDashboard = () => {
     }
   };
 
-  const handleAddStation = () => {
+  const handleAddStation = async (createdStation) => {
+    // Adicionar a nova estação à lista local
+    setStations(prev => [...prev, createdStation]);
     setOpenAddStation(false);
+    
+    // Reset form
     setNewStation({
       name: '',
       location: '',
-      type: '',
+      chargingType: 'AC_STANDARD',
       power: '',
       coordinates: '',
-      price: '',
-      availability: ''
+      totalPorts: '1'
     });
-  };
-
-  const handleEditStation = (station) => {
-    setSelectedStation(station);
-    setOpenEditStation(true);
-  };
-
-  const handleSaveEditStation = () => {
-    setOpenEditStation(false);
-    setSelectedStation(null);
   };
 
   const handleNewStationChange = (field, value) => {
@@ -126,13 +100,22 @@ const ChargingStationDashboard = () => {
     }));
   };
 
+  const handleRefreshStations = () => {
+    fetchStations();
+  };
+
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
       <Header onProfileAction={handleProfileAction} />
 
       <Box sx={{ p: 3 }}>
         <StatsCards stats={stats} />
-        <AlertsPanel alerts={alerts} />
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         <Card>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -145,11 +128,19 @@ const ChargingStationDashboard = () => {
 
           <CardContent>
             {selectedTab === 0 && (
-              <StationsTable 
-                stations={stations}
-                onAddStation={() => setOpenAddStation(true)}
-                onEditStation={handleEditStation}
-              />
+              <>
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <StationsTable 
+                    stations={stations}
+                    onAddStation={() => setOpenAddStation(true)}
+                    onRefresh={handleRefreshStations}
+                  />
+                )}
+              </>
             )}
             {selectedTab === 1 && <ReportsTab />}
             {selectedTab === 2 && <SettingsTab />}
@@ -163,13 +154,6 @@ const ChargingStationDashboard = () => {
         newStation={newStation}
         onStationChange={handleNewStationChange}
         onSave={handleAddStation}
-      />
-
-      <EditStationDialog
-        open={openEditStation}
-        onClose={() => setOpenEditStation(false)}
-        selectedStation={selectedStation}
-        onSave={handleSaveEditStation}
       />
     </Box>
   );
