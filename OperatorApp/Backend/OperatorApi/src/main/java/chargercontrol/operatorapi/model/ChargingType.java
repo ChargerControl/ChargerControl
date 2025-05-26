@@ -9,4 +9,5 @@ public enum ChargingType {
     CCS,            // Combined Charging System
     CHADEMO,        // CHAdeMO
     TYPE2           // Type 2 (Mennekes)
+, FAST, AC, DC
 }
