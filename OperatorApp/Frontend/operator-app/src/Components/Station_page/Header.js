@@ -12,18 +12,34 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Divider
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
 import {
   Notifications,
   Settings,
   Person,
-  ExitToApp
+  ExitToApp,
+  Visibility,
+  VisibilityOff
 } from '@mui/icons-material';
 import logo from '../../Images/logo.png';
 
 const Header = ({ onProfileAction }) => {
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [profileName, setProfileName] = useState('Bruno Tavares');
+  const [profilePassword, setProfilePassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
 
   const handleLogout = () => {
     window.location.href = '/login';
@@ -31,7 +47,23 @@ const Header = ({ onProfileAction }) => {
 
   const handleProfileClick = (action) => {
     setOpenProfileMenu(false);
-    onProfileAction(action);
+    if (action === 'settings') {
+      setEditProfileOpen(true);
+    } else {
+      onProfileAction(action);
+    }
+  };
+
+  const handleProfileSave = () => {
+    setProfileError('');
+    setProfileSuccess('');
+    if (!profileName.trim()) {
+      setProfileError('O nome não pode ser vazio.');
+      return;
+    }
+    // Aqui você pode adicionar a chamada à API para atualizar o perfil
+    setProfileSuccess('Perfil atualizado com sucesso!');
+    setTimeout(() => setEditProfileOpen(false), 1200);
   };
 
   return (
@@ -116,6 +148,44 @@ const Header = ({ onProfileAction }) => {
               </List>
             </Paper>
           )}
+          {/* Modal de edição de perfil */}
+          <Dialog open={editProfileOpen} onClose={() => setEditProfileOpen(false)} maxWidth="xs" fullWidth>
+            <DialogTitle>Editar Perfil</DialogTitle>
+            <DialogContent>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                <TextField
+                  label="Nome do Perfil"
+                  value={profileName}
+                  onChange={e => setProfileName(e.target.value)}
+                  fullWidth
+                  autoFocus
+                />
+                <TextField
+                  label="Nova Senha"
+                  type={showPassword ? 'text' : 'password'}
+                  value={profilePassword}
+                  onChange={e => setProfilePassword(e.target.value)}
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowPassword((show) => !show)} edge="end">
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                  helperText="Deixe em branco para não alterar a senha"
+                />
+                {profileError && <Typography color="error" variant="body2">{profileError}</Typography>}
+                {profileSuccess && <Typography color="success.main" variant="body2">{profileSuccess}</Typography>}
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditProfileOpen(false)}>Cancelar</Button>
+              <Button onClick={handleProfileSave} variant="contained" sx={{ backgroundColor: '#2e7d32' }}>Salvar</Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </Toolbar>
     </AppBar>
