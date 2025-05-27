@@ -35,15 +35,31 @@ const Header = ({ onProfileAction }) => {
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#2e7d32' }}>
-      <Toolbar>
-        <img src={logo} alt="Logo" style={{ width: 65, height: 65, marginRight: 16 }} />
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Charger Control
-        </Typography>
-        <Badge badgeContent={3} color="error">
-          <Notifications />
-        </Badge>
+    <AppBar position="static" sx={{ background: 'linear-gradient(90deg, #2e7d32 60%, #43a047 100%)', boxShadow: 2 }}>
+      <Toolbar sx={{ minHeight: 72, px: { xs: 1, sm: 3 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mr: 3 }}>
+          <Box sx={{
+            width: 56,
+            height: 56,
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: 2,
+            background: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mr: 2
+          }}>
+            <img src={logo} alt="Logo" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+          </Box>
+          <Typography variant="h5" component="div" sx={{ fontWeight: 700, letterSpacing: 1, color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,0.10)' }}>
+            Charger Control
+          </Typography>
+        </Box>
+        <Box sx={{ flexGrow: 1 }} />
+        {/* <Badge badgeContent={3} color="error" sx={{ mr: 2 }}>
+          <Notifications sx={{ fontSize: 28 }} />
+        </Badge> */}
         <Box sx={{ position: 'relative' }}>
           <Box 
             onClick={() => setOpenProfileMenu(!openProfileMenu)}
@@ -52,20 +68,22 @@ const Header = ({ onProfileAction }) => {
               alignItems: 'center', 
               ml: 2, 
               cursor: 'pointer',
-              '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' },
-              p: 1,
-              borderRadius: 1
+              backgroundColor: 'rgba(255,255,255,0.10)',
+              p: 1.2,
+              borderRadius: 2,
+              transition: 'background 0.2s',
+              boxShadow: openProfileMenu ? 3 : 0,
+              '&:hover': { backgroundColor: 'rgba(255,255,255,0.18)' }
             }}
           >
-            <Avatar sx={{ backgroundColor: '#4caf50' }}>
+            <Avatar sx={{ background: 'linear-gradient(135deg, #43a047 60%, #2e7d32 100%)', color: '#fff', width: 44, height: 44, fontWeight: 700, fontSize: 24 }}>
               <Person />
             </Avatar>
-            <Box sx={{ ml: 2 }}>
-              <Typography variant="body2">Chicão Silva</Typography>
-              <Typography variant="caption">Operador</Typography>
+            <Box sx={{ ml: 2, textAlign: 'left' }}>
+              <Typography variant="body1" sx={{ fontWeight: 600, color: '#fff' }}>Bruno Tavares</Typography>
+              <Typography variant="caption" sx={{ color: '#e0e0e0', fontWeight: 400 }}>Operador</Typography>
             </Box>
           </Box>
-          
           {openProfileMenu && (
             <Paper
               sx={{
@@ -73,9 +91,12 @@ const Header = ({ onProfileAction }) => {
                 top: '100%',
                 right: 0,
                 mt: 1,
-                minWidth: 200,
+                minWidth: 210,
                 zIndex: 1000,
-                boxShadow: 3
+                boxShadow: 6,
+                borderRadius: 2,
+                overflow: 'hidden',
+                background: '#fff'
               }}
             >
               <List>
