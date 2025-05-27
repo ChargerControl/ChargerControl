@@ -42,8 +42,11 @@ import {
   DeleteOutline,
   Info,
   BatteryChargingFull,
-  PowerSettingsNew
+  PowerSettingsNew,
+  Edit
 } from '@mui/icons-material';
+import EditStationModal from './EditStationModal';
+
 
 const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onStationDeleted }) => {
   const [chargingPortsDialog, setChargingPortsDialog] = useState({
@@ -68,6 +71,9 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
     loading: false,
     error: ''
   });
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [stationToEdit, setStationToEdit] = useState(null);
 
   // Estado para feedback visual
   const [snackbar, setSnackbar] = useState({
@@ -261,6 +267,30 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
     }
   };
 
+  // Abrir modal de edição
+  const handleEditStation = (station) => {
+    setStationToEdit(station);
+    setEditModalOpen(true);
+  };
+
+  // Fechar modal de edição
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+    setStationToEdit(null);
+  };
+
+  // Estação atualizada
+  const handleStationUpdated = (updatedStation) => {
+    setLocalStations(prev =>
+      prev.map(st => st.id === updatedStation.id ? updatedStation : st)
+    );
+    setSnackbar({
+      open: true,
+      message: 'Estação atualizada com sucesso',
+      severity: 'success'
+    });
+  };
+
   // Abrir modal de portas de carregamento
   const handleOpenChargingPorts = async (station) => {
     setChargingPortsDialog({
@@ -435,6 +465,14 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
 
   return (
     <>
+      <EditStationModal
+        open={editModalOpen}
+        station={stationToEdit}
+        onClose={handleCloseEditModal}
+        onStationUpdated={handleStationUpdated}
+      />
+
+      {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">
           Gestão de Estações ({localStations.length})
@@ -456,6 +494,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
         </Box>
       </Box>
 
+      {/* Tabela de Estações */}
       {localStations.length === 0 ? (
         <Box sx={{ 
           textAlign: 'center', 
@@ -555,6 +594,15 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                           color="info"
                         >
                           <EvStation />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Editar estação">
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleEditStation(station)}
+                          color="primary"
+                        >
+                          <Edit />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Eliminar estação">

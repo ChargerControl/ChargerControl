@@ -48,6 +48,40 @@ public class StationController {
         return ResponseEntity.ok(stations);
     }
 
+    @GetMapping("/{id}")
+    @Operation(summary = "Get a station by ID", responses = {
+            @ApiResponse(responseCode = "200", description = "Station retrieved successfully", 
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Station.class))),
+            @ApiResponse(responseCode = "404", description = "Station not found")
+    })
+    public ResponseEntity<Station> getStationById(
+            @Parameter(description = "ID of the station to retrieve") @PathVariable Long id) {
+        try {
+            Station station = stationService.getStationById(id);
+            return ResponseEntity.ok(station);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update a charging station", responses = {
+            @ApiResponse(responseCode = "200", description = "Station updated successfully", 
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Station.class))),
+            @ApiResponse(responseCode = "404", description = "Station not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid station data")
+    })
+    public ResponseEntity<Station> updateStation(
+            @Parameter(description = "ID of the station to update") @PathVariable Long id,
+            @Valid @RequestBody Station station) {
+        try {
+            Station updatedStation = stationService.updateStation(id, station);
+            return ResponseEntity.ok(updatedStation);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/available/{available}")
     @Operation(summary = "Get stations by availability status", responses = {
             @ApiResponse(responseCode = "200", description = "Stations retrieved successfully", 
