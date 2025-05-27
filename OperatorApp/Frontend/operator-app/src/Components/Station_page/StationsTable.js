@@ -28,7 +28,9 @@ import {
   Snackbar,
   Card,
   CardContent,
-  Grid
+  Grid,
+  TextField,
+  MenuItem
 } from '@mui/material';
 import {
   Add,
@@ -43,7 +45,8 @@ import {
   Info,
   BatteryChargingFull,
   PowerSettingsNew,
-  Edit
+  Edit,
+  Add as AddIcon
 } from '@mui/icons-material';
 import EditStationModal from './EditStationModal';
 
@@ -84,6 +87,16 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
 
   // Estado local das estações para permitir remoção imediata
   const [localStations, setLocalStations] = useState(stations);
+
+  // Estado para modal de criação de porta
+  const [addPortDialog, setAddPortDialog] = useState({
+    open: false,
+    loading: false,
+    error: '',
+    portIdentifier: '',
+    status: 'AVAILABLE',
+    energyUsed: 0
+  });
 
   // Atualizar estações locais quando o prop mudar
   React.useEffect(() => {
@@ -463,6 +476,66 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  // Função para criar nova porta
+  const handleOpenAddPort = () => {
+    setAddPortDialog({
+      open: true,
+      loading: false,
+      error: '',
+      portIdentifier: '',
+      status: 'AVAILABLE',
+      energyUsed: 0
+    });
+  };
+  const handleCloseAddPort = () => {
+    setAddPortDialog(prev => ({ ...prev, open: false, error: '' }));
+  };
+  const handleAddPortChange = (field, value) => {
+    setAddPortDialog(prev => ({ ...prev, [field]: value }));
+  };
+  const handleAddPortSubmit = async () => {
+    setAddPortDialog(prev => ({ ...prev, loading: true, error: '' }));
+    try {
+      const response = await fetch(`http://localhost:8080/apiV1/chargingports/station/${chargingPortsDialog.stationId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          portIdentifier: addPortDialog.portIdentifier,
+          status: addPortDialog.status,
+          energyUsed: Number(addPortDialog.energyUsed)
+        })
+      });
+      if (!response.ok) {
+        let errorMessage;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || `Erro HTTP: ${response.status}`;
+        } catch {
+          errorMessage = `Erro ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+      // Atualizar lista de portas
+      const ports = await fetchChargingPorts(chargingPortsDialog.stationId);
+      setChargingPortsDialog(prev => ({ ...prev, ports: Array.isArray(ports) ? ports : [] }));
+      setAddPortDialog({
+        open: false,
+        loading: false,
+        error: '',
+        portIdentifier: '',
+        status: 'AVAILABLE',
+        energyUsed: 0
+      });
+      setSnackbar({
+        open: true,
+        message: 'Porta criada com sucesso',
+        severity: 'success'
+      });
+    } catch (error) {
+      setAddPortDialog(prev => ({ ...prev, loading: false, error: error.message }));
+    }
+  };
+
   return (
     <>
       <EditStationModal
@@ -631,7 +704,15 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
         fullWidth
       >
         <DialogTitle>
-          Portas de Carregamento - {chargingPortsDialog.stationName}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            Portas de Carregamento - {chargingPortsDialog.stationName}
+            <Box sx={{ flex: 1 }} />
+            <Tooltip title="Adicionar nova porta">
+              <IconButton color="primary" onClick={handleOpenAddPort} size="small">
+                <AddIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </DialogTitle>
         <DialogContent>
           {chargingPortsDialog.error && (
@@ -789,6 +870,57 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClosePortDetails}>Fechar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal de criação de nova porta */}
+      <Dialog open={addPortDialog.open} onClose={handleCloseAddPort} maxWidth="xs" fullWidth>
+        <DialogTitle>Adicionar Nova Porta</DialogTitle>
+        <DialogContent>
+          {addPortDialog.error && (
+            <Alert severity="error" sx={{ mb: 2 }}>{addPortDialog.error}</Alert>
+          )}
+          <Box component="form" sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="Identificador da Porta"
+              value={addPortDialog.portIdentifier}
+              onChange={e => handleAddPortChange('portIdentifier', e.target.value)}
+              required
+              fullWidth
+            />
+            <TextField
+              select
+              label="Status"
+              value={addPortDialog.status}
+              onChange={e => handleAddPortChange('status', e.target.value)}
+              fullWidth
+            >
+              <MenuItem value="AVAILABLE">Disponível</MenuItem>
+              <MenuItem value="OCCUPIED">Ocupada</MenuItem>
+              <MenuItem value="OUT_OF_ORDER">Fora de Serviço</MenuItem>
+              <MenuItem value="MAINTENANCE">Manutenção</MenuItem>
+            </TextField>
+            <TextField
+              label="Energia Utilizada (kWh)"
+              type="number"
+              value={addPortDialog.energyUsed}
+              onChange={e => handleAddPortChange('energyUsed', e.target.value)}
+              inputProps={{ min: 0, step: 0.01 }}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddPort} disabled={addPortDialog.loading}>Cancelar</Button>
+          <Button 
+            onClick={handleAddPortSubmit} 
+            variant="contained" 
+            disabled={addPortDialog.loading}
+            startIcon={addPortDialog.loading ? <CircularProgress size={20} /> : <AddIcon />}
+            sx={{ backgroundColor: '#2e7d32' }}
+          >
+            {addPortDialog.loading ? 'Adicionando...' : 'Adicionar'}
+          </Button>
         </DialogActions>
       </Dialog>
 
