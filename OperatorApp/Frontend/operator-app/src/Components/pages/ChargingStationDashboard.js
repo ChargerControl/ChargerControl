@@ -121,8 +121,6 @@ const ChargingStationDashboard = () => {
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={selectedTab} onChange={(e, newValue) => setSelectedTab(newValue)}>
               <Tab label="Estações" />
-              <Tab label="Relatórios" />
-              <Tab label="Configurações" />
             </Tabs>
           </Box>
 

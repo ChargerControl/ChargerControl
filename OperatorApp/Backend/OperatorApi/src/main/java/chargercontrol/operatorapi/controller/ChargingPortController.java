@@ -1,5 +1,6 @@
 package chargercontrol.operatorapi.controller;
 
+import chargercontrol.operatorapi.dto.ChargingPortRequest;
 import chargercontrol.operatorapi.model.ChargingPort;
 import chargercontrol.operatorapi.model.ChargingPortStatus;
 import chargercontrol.operatorapi.service.ChargingPortService;
@@ -9,6 +10,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,4 +88,24 @@ public class ChargingPortController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/station/{stationId}")
+        @Operation(summary = "Create a new charging port for a station", responses = {
+                @ApiResponse(responseCode = "201", description = "Charging port created successfully", 
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ChargingPort.class))),
+                @ApiResponse(responseCode = "400", description = "Invalid charging port data"),
+                @ApiResponse(responseCode = "404", description = "Station not found")
+        })
+        public ResponseEntity<ChargingPort> createChargingPort(
+                @Parameter(description = "ID of the station to add the charging port to") @PathVariable Long stationId,
+                @Valid @RequestBody ChargingPortRequest chargingPortRequest) {
+
+        ChargingPort chargingPort = new ChargingPort();
+        chargingPort.setPortIdentifier(chargingPortRequest.getPortIdentifier());
+        chargingPort.setStatus(chargingPortRequest.getStatus());
+        chargingPort.setEnergyUsed(chargingPortRequest.getEnergyUsed());
+
+        ChargingPort newPort = chargingPortService.createChargingPort(stationId, chargingPort);
+        return new ResponseEntity<>(newPort, HttpStatus.CREATED);
+        }
 }
