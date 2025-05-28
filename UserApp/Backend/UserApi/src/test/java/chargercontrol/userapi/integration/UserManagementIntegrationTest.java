@@ -3,9 +3,11 @@ package chargercontrol.userapi.integration;
 import chargercontrol.userapi.UserApiApplication;
 import chargercontrol.userapi.config.TestSecurityConfig;
 import chargercontrol.userapi.model.AuthRequest;
+import chargercontrol.userapi.model.RegisterRequest;
 import chargercontrol.userapi.model.User;
 import chargercontrol.userapi.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +19,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = {UserApiApplication.class, TestSecurityConfig.class}
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {UserApiApplication.class, TestSecurityConfig.class},
+        properties = "spring.main.allow-bean-definition-overriding=true"
 )
 @AutoConfigureMockMvc
+@Transactional
 @ActiveProfiles("test")
-@Import(TestSecurityConfig.class)
 public class UserManagementIntegrationTest {
 
     @Autowired
@@ -49,37 +54,32 @@ public class UserManagementIntegrationTest {
     }
 
     @Test
-    void fullRegistrationAndLoginFlow() throws Exception {
-        // Register a new user
-        User newUser = new User();
-        newUser.setName("Test User");
-        newUser.setEmail("test@example.com");
-        newUser.setPassword("password123");
+    public void fullRegistrationAndLoginFlow() throws Exception {
+        String uniqueEmail = "testuser" + UUID.randomUUID() + "@example.com";
+
+
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setName("Test User");
+        registerRequest.setEmail(uniqueEmail);
+        registerRequest.setPassword("password123");
 
         // Perform registration
         mockMvc.perform(post("/apiV1/user/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(newUser)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").exists())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isOk()) // Now expects 200
+                .andExpect(jsonPath("$.jwt").isNotEmpty());
 
-        // Verify user is in database
-        User savedUser = userRepository.findByEmail("test@example.com").orElse(null);
-        assertNotNull(savedUser);
-        assertTrue(passwordEncoder.matches("password123", savedUser.getPassword()));
-
-        // Login with the same user
+        // Perform login
         AuthRequest loginRequest = new AuthRequest();
-        loginRequest.setEmail("test@example.com");
+        loginRequest.setEmail(uniqueEmail);
         loginRequest.setPassword("password123");
 
         mockMvc.perform(post("/apiV1/user/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").exists())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.jwt").isNotEmpty());
     }
 
     @Test

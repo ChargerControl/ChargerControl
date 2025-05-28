@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "User") 
+@Table(name = "users") // Consider renaming table to "users" for convention
 public class User {
 
     @Id
@@ -27,6 +27,7 @@ public class User {
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     @Size(max = 255, message = "Email must not exceed 255 characters")
+    @Column(unique = true, nullable = false)
     private String email;
 
     @NotBlank(message = "Password is required")
@@ -39,4 +40,3 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookSlot> bookSlots = new ArrayList<>();
 }
-

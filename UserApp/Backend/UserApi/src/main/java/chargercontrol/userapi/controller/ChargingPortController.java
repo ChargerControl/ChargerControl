@@ -1,5 +1,6 @@
 package chargercontrol.userapi.controller;
 
+import chargercontrol.userapi.model.ChargingPortCreateRequest;
 import chargercontrol.userapi.model.ChargingPort;
 import chargercontrol.userapi.model.ChargingPortStatus;
 import chargercontrol.userapi.service.ChargingPortService;
@@ -35,7 +36,11 @@ public class ChargingPortController {
     })
     public ResponseEntity<ChargingPort> createChargingPort(
             @Parameter(description = "ID of the station to add the charging port to") @PathVariable Long stationId,
-            @Valid @RequestBody ChargingPort chargingPort) {
+            @Valid @RequestBody ChargingPortCreateRequest request) {
+        ChargingPort chargingPort = new ChargingPort();
+        chargingPort.setPortIdentifier(request.getPortIdentifier());
+        chargingPort.setStatus(request.getStatus());
+        chargingPort.setEnergyUsed(request.getEnergyUsed());
         ChargingPort newPort = chargingPortService.createChargingPort(stationId, chargingPort);
         return new ResponseEntity<>(newPort, HttpStatus.CREATED);
     }
