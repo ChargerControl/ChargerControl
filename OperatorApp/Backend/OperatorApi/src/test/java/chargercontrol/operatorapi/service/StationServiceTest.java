@@ -2,6 +2,7 @@ package chargercontrol.operatorapi.service;
 
 import chargercontrol.operatorapi.model.ChargingPort;
 import chargercontrol.operatorapi.model.Station;
+import chargercontrol.operatorapi.model.ChargingType;
 import chargercontrol.operatorapi.repository.StationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -137,4 +139,234 @@ class StationServiceTest {
         verify(stationRepository).save(station);
     }
 
+    // TESTES PARA updateStation
+    @Test
+    void updateStation_ShouldUpdateBasicFields_WhenStationExists() {
+        // Given
+        Long stationId = 1L;
+        Station existingStation = new Station();
+        existingStation.setId(stationId);
+        existingStation.setName("Old Name");
+        existingStation.setLocation("Old Location");
+        existingStation.setPower(50.0);
+        existingStation.setLatitude(40.0);
+        existingStation.setLongitude(-8.0);
+        existingStation.setChargingType(ChargingType.AC);
+        existingStation.setAvailable(true);
+        existingStation.setChargingPorts(new ArrayList<>());
+
+        Station updateData = new Station();
+        updateData.setName("New Name");
+        updateData.setLocation("New Location");
+        updateData.setPower(100.0);
+        updateData.setLatitude(41.0);
+        updateData.setLongitude(-9.0);
+        updateData.setChargingType(ChargingType.DC);
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+        when(stationRepository.save(any(Station.class))).thenReturn(existingStation);
+
+        // When
+        Station result = stationService.updateStation(stationId, updateData);
+
+        // Then
+        assertEquals("New Name", result.getName());
+        assertEquals("New Location", result.getLocation());
+        assertEquals(100.0, result.getPower());
+        assertEquals(41.0, result.getLatitude());
+        assertEquals(-9.0, result.getLongitude());
+        assertEquals(ChargingType.DC, result.getChargingType());
+        verify(stationRepository).findById(stationId);
+        verify(stationRepository).save(existingStation);
+    }
+
+    @Test
+    void updateStation_ShouldUpdateAvailability_WhenProvided() {
+        // Given
+        Long stationId = 1L;
+        Station existingStation = new Station();
+        existingStation.setId(stationId);
+        existingStation.setAvailable(true);
+        existingStation.setChargingPorts(new ArrayList<>());
+
+        Station updateData = new Station();
+        updateData.setAvailable(false);
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+        when(stationRepository.save(any(Station.class))).thenReturn(existingStation);
+
+        // When
+        Station result = stationService.updateStation(stationId, updateData);
+
+        // Then
+        assertFalse(result.getAvailable());
+        verify(stationRepository).save(existingStation);
+    }
+
+    @Test
+    void updateStation_ShouldNotUpdateAvailability_WhenNull() {
+        // Given
+        Long stationId = 1L;
+        Station existingStation = new Station();
+        existingStation.setId(stationId);
+        existingStation.setAvailable(true);
+        existingStation.setChargingPorts(new ArrayList<>());
+
+        Station updateData = new Station();
+        updateData.setAvailable(null); // explicitly null
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+        when(stationRepository.save(any(Station.class))).thenReturn(existingStation);
+
+        // When
+        Station result = stationService.updateStation(stationId, updateData);
+
+        // Then
+        assertTrue(result.getAvailable()); // Should remain unchanged
+        verify(stationRepository).save(existingStation);
+    }
+
+    @Test
+    void updateStation_ShouldUpdateChargingPorts_WhenProvided() {
+        // Given
+        Long stationId = 1L;
+        Station existingStation = new Station();
+        existingStation.setId(stationId);
+        existingStation.setChargingPorts(new ArrayList<>());
+        
+        // Add some existing ports
+        ChargingPort oldPort = new ChargingPort();
+        oldPort.setId(1L);
+        existingStation.getChargingPorts().add(oldPort);
+
+        Station updateData = new Station();
+        ChargingPort newPort1 = new ChargingPort();
+        ChargingPort newPort2 = new ChargingPort();
+        updateData.setChargingPorts(List.of(newPort1, newPort2));
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+        when(stationRepository.save(any(Station.class))).thenReturn(existingStation);
+
+        // When
+        Station result = stationService.updateStation(stationId, updateData);
+
+        // Then
+        assertEquals(2, result.getChargingPorts().size());
+        // Verify old ports were cleared and new ones added
+        verify(stationRepository).save(existingStation);
+    }
+
+    @Test
+    void updateStation_ShouldNotUpdateChargingPorts_WhenNull() {
+        // Given
+        Long stationId = 1L;
+        Station existingStation = new Station();
+        existingStation.setId(stationId);
+        existingStation.setChargingPorts(new ArrayList<>());
+        
+        ChargingPort existingPort = new ChargingPort();
+        existingStation.getChargingPorts().add(existingPort);
+
+        Station updateData = new Station();
+        updateData.setChargingPorts(null); // explicitly null
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+        when(stationRepository.save(any(Station.class))).thenReturn(existingStation);
+
+        // When
+        Station result = stationService.updateStation(stationId, updateData);
+
+        // Then
+        assertEquals(1, result.getChargingPorts().size()); // Should remain unchanged
+        verify(stationRepository).save(existingStation);
+    }
+
+    @Test
+    void updateStation_ShouldThrowException_WhenStationNotFound() {
+        // Given
+        Long stationId = 999L;
+        Station updateData = new Station();
+        updateData.setName("New Name");
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(EntityNotFoundException.class, 
+                () -> stationService.updateStation(stationId, updateData));
+        
+        verify(stationRepository).findById(stationId);
+        verify(stationRepository, never()).save(any(Station.class));
+    }
+
+    @Test
+    void updateStation_ShouldHandleEmptyChargingPortsList() {
+        // Given
+        Long stationId = 1L;
+        Station existingStation = new Station();
+        existingStation.setId(stationId);
+        existingStation.setChargingPorts(new ArrayList<>());
+        
+        ChargingPort existingPort = new ChargingPort();
+        existingStation.getChargingPorts().add(existingPort);
+
+        Station updateData = new Station();
+        updateData.setChargingPorts(new ArrayList<>()); // empty list
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+        when(stationRepository.save(any(Station.class))).thenReturn(existingStation);
+
+        // When
+        Station result = stationService.updateStation(stationId, updateData);
+
+        // Then
+        assertTrue(result.getChargingPorts().isEmpty()); // Should be cleared
+        verify(stationRepository).save(existingStation);
+    }
+
+    @Test
+    void updateStation_ShouldUpdateAllFieldsAtOnce() {
+        // Given
+        Long stationId = 1L;
+        Station existingStation = new Station();
+        existingStation.setId(stationId);
+        existingStation.setName("Old Name");
+        existingStation.setLocation("Old Location");
+        existingStation.setPower(50.0);
+        existingStation.setLatitude(40.0);
+        existingStation.setLongitude(-8.0);
+        existingStation.setChargingType(ChargingType.AC);
+        existingStation.setAvailable(true);
+        existingStation.setChargingPorts(new ArrayList<>());
+
+        Station updateData = new Station();
+        updateData.setName("Updated Name");
+        updateData.setLocation("Updated Location");
+        updateData.setPower(150.0);
+        updateData.setLatitude(42.0);
+        updateData.setLongitude(-7.0);
+        updateData.setChargingType(ChargingType.DC);
+        updateData.setAvailable(false);
+        
+        ChargingPort newPort = new ChargingPort();
+        updateData.setChargingPorts(List.of(newPort));
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(existingStation));
+        when(stationRepository.save(any(Station.class))).thenReturn(existingStation);
+
+        // When
+        Station result = stationService.updateStation(stationId, updateData);
+
+        // Then
+        assertEquals("Updated Name", result.getName());
+        assertEquals("Updated Location", result.getLocation());
+        assertEquals(150.0, result.getPower());
+        assertEquals(42.0, result.getLatitude());
+        assertEquals(-7.0, result.getLongitude());
+        assertEquals(ChargingType.DC, result.getChargingType());
+        assertFalse(result.getAvailable());
+        assertEquals(1, result.getChargingPorts().size());
+        
+        verify(stationRepository).findById(stationId);
+        verify(stationRepository).save(existingStation);
+    }
 }
