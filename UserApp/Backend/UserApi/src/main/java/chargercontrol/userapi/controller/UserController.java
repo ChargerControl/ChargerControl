@@ -1,3 +1,5 @@
+/* 
+
 package chargercontrol.userapi.controller;
 
 import chargercontrol.userapi.jwt.JwtUtil;
@@ -60,7 +62,9 @@ public class UserController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             // Check if email already exists
-            if (userRepository.findByEmail(registerRequest.getEmail()) != null) {
+
+            if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new AuthResponse(null, "Email already in use"));
             }
@@ -90,20 +94,22 @@ public class UserController {
         try {
             User user = userService.getUserByEmail(authenticationRequest.getEmail());
 
-            if (user == null) {
+            if (user == null || !passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new AuthResponse(null, "Invalid email or password"));
             }
 
-            if (!passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword())) {
+            String jwt = jwtUtil.generateToken(user.getEmail());
+            return ResponseEntity.ok(new AuthResponse(jwt, null));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("User not found")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new AuthResponse(null, "Invalid email or password"));
             }
-            String jwt = jwtUtil.generateToken(user.getEmail());
-            return ResponseEntity.ok(new AuthResponse(jwt, null));
-        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new AuthResponse(null, "Login failed: " + e.getMessage()));
         }
     }
 }
+
+*/

@@ -1,4 +1,9 @@
+/* 
+
+
 package chargercontrol.userapi.service;
+
+import chargercontrol.userapi.exception.AuthenticationFailedException;
 import ch.qos.logback.classic.encoder.JsonEncoder;
 import chargercontrol.userapi.model.Car;
 import chargercontrol.userapi.model.User;
@@ -119,5 +124,17 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
+    public User getUserByEmailAndPassword(String email, String password) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new AuthenticationFailedException("Invalid email or password"));
 
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new AuthenticationFailedException("Invalid email or password");
+        }
+
+        return user;
+    }
 }
+
+
+*/
