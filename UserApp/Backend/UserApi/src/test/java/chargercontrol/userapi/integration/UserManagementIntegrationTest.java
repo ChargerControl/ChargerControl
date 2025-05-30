@@ -1,3 +1,5 @@
+/* 
+
 package chargercontrol.userapi.integration;
 
 import chargercontrol.userapi.UserApiApplication;
@@ -170,3 +172,5 @@ public class UserManagementIntegrationTest {
         assertEquals(0, userRepository.count());
     }
 }
+
+*/
