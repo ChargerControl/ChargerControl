@@ -477,6 +477,16 @@ function Map() {
             <DialogActions>
               <Button onClick={() => setDialogOpen(false)}>Fechar</Button>
               <Button 
+                variant="outlined" 
+                startIcon={<ElectricCar />}
+                onClick={() => {
+                  // Aqui pode adicionar a lógica de reserva
+                  alert(`Reserva solicitada para ${selectedStation.name}`);
+                }}
+              >
+                Reservar
+              </Button>
+              <Button 
                 variant="contained" 
                 startIcon={<LocationOn />}
                 onClick={() => {
