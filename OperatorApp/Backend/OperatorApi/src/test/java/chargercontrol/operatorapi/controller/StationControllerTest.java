@@ -88,7 +88,6 @@ class StationControllerTest {
         return station;
     }
 
-
     @Test
     @DisplayName("Should return all stations successfully")
     void getAllStations_Success() throws Exception {
@@ -141,6 +140,153 @@ class StationControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
 
         verify(stationService).getAllStations();
+    }
+
+    @Test
+    @DisplayName("Should return station by ID successfully")
+    void getStationById_Success() throws Exception {
+        // Given
+        Long stationId = 1L;
+        Station station = createValidStation();
+        station.setId(stationId);
+        station.setName("Found Station");
+        station.setLocation("Found Location");
+        station.setAvailable(true);
+
+        when(stationService.getStationById(stationId)).thenReturn(station);
+
+        // When & Then
+        mockMvc.perform(get("/apiV1/stations/{id}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(stationId))
+                .andExpect(jsonPath("$.name").value("Found Station"))
+                .andExpect(jsonPath("$.location").value("Found Location"))
+                .andExpect(jsonPath("$.available").value(true))
+                .andExpect(jsonPath("$.power").value(50.0))
+                .andExpect(jsonPath("$.latitude").value(-23.5505))
+                .andExpect(jsonPath("$.longitude").value(-46.6333));
+
+        verify(stationService).getStationById(stationId);
+    }
+
+    @Test
+    @DisplayName("Should return 404 when station not found by ID")
+    void getStationById_NotFound() throws Exception {
+        // Given
+        Long stationId = 999L;
+        when(stationService.getStationById(stationId))
+                .thenThrow(new RuntimeException("Station not found"));
+
+        // When & Then
+        mockMvc.perform(get("/apiV1/stations/{id}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(stationService).getStationById(stationId);
+    }
+
+    @Test
+    @DisplayName("Should update station successfully")
+    void updateStation_Success() throws Exception {
+        // Given
+        Long stationId = 1L;
+        Station updateRequest = createValidStation();
+        updateRequest.setName("Updated Station");
+        updateRequest.setLocation("Updated Location");
+        updateRequest.setPower(75.0);
+        updateRequest.setAvailable(false);
+
+        Station updatedStation = createValidStation();
+        updatedStation.setId(stationId);
+        updatedStation.setName("Updated Station");
+        updatedStation.setLocation("Updated Location");
+        updatedStation.setPower(75.0);
+        updatedStation.setAvailable(false);
+
+        when(stationService.updateStation(eq(stationId), any(Station.class))).thenReturn(updatedStation);
+
+        // When & Then
+        mockMvc.perform(put("/apiV1/stations/{id}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(stationId))
+                .andExpect(jsonPath("$.name").value("Updated Station"))
+                .andExpect(jsonPath("$.location").value("Updated Location"))
+                .andExpect(jsonPath("$.power").value(75.0))
+                .andExpect(jsonPath("$.available").value(false));
+
+        verify(stationService).updateStation(eq(stationId), any(Station.class));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when updating non-existent station")
+    void updateStation_NotFound() throws Exception {
+        // Given
+        Long stationId = 999L;
+        Station updateRequest = createValidStation();
+        updateRequest.setName("Updated Station");
+
+        when(stationService.updateStation(eq(stationId), any(Station.class)))
+                .thenThrow(new RuntimeException("Station not found"));
+
+        // When & Then
+        mockMvc.perform(put("/apiV1/stations/{id}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isNotFound());
+
+        verify(stationService).updateStation(eq(stationId), any(Station.class));
+    }
+
+    @Test
+    @DisplayName("Should handle validation errors when updating station")
+    void updateStation_ValidationError() throws Exception {
+        // Given
+        Long stationId = 1L;
+        Station invalidStation = new Station();
+        // Not setting required fields to trigger validation error
+
+        // When & Then
+        mockMvc.perform(put("/apiV1/stations/{id}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidStation)))
+                .andExpect(status().isBadRequest());
+
+        // Service should not be called for invalid data
+        verify(stationService, never()).updateStation(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should update partial station data successfully")
+    void updateStation_PartialUpdate() throws Exception {
+        // Given
+        Long stationId = 1L;
+        Station updateRequest = createValidStation();
+        updateRequest.setName("Partially Updated Station");
+        // Keep other fields the same
+
+        Station updatedStation = createValidStation();
+        updatedStation.setId(stationId);
+        updatedStation.setName("Partially Updated Station");
+
+        when(stationService.updateStation(eq(stationId), any(Station.class))).thenReturn(updatedStation);
+
+        // When & Then
+        mockMvc.perform(put("/apiV1/stations/{id}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(stationId))
+                .andExpect(jsonPath("$.name").value("Partially Updated Station"))
+                .andExpect(jsonPath("$.location").value("Test Location")) // Original value
+                .andExpect(jsonPath("$.power").value(50.0)); // Original value
+
+        verify(stationService).updateStation(eq(stationId), any(Station.class));
     }
 
     @Test
@@ -264,5 +410,4 @@ class StationControllerTest {
         // Service should not be called for invalid data
         verify(stationService, never()).saveStation(any(Station.class));
     }
-
 }

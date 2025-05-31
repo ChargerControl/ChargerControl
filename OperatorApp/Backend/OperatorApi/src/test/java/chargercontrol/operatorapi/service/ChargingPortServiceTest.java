@@ -2,6 +2,7 @@ package chargercontrol.operatorapi.service;
 
 import chargercontrol.operatorapi.model.ChargingPort;
 import chargercontrol.operatorapi.model.ChargingPortStatus;
+import chargercontrol.operatorapi.model.Station;
 import chargercontrol.operatorapi.repository.ChargingPortRepository;
 import chargercontrol.operatorapi.repository.StationRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,6 +12,7 @@ import org.mockito.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -101,5 +103,33 @@ class ChargingPortServiceTest {
         double result = chargingPortService.getTotalEnergyUsedByStation(stationId);
 
         assertEquals(30.5, result);
+    }
+
+    @Test
+    void createChargingPort_ShouldInitializeAndSave_WhenValid() {
+        Long stationId = 1L;
+        Station station = new Station();
+        ChargingPort portToSave = new ChargingPort();
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.of(station));
+        when(chargingPortRepository.save(any(ChargingPort.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ChargingPort savedPort = chargingPortService.createChargingPort(stationId, portToSave);
+
+        assertNotNull(savedPort.getStation());
+        assertEquals(ChargingPortStatus.AVAILABLE, savedPort.getStatus());
+        assertEquals(0.0, savedPort.getEnergyUsed());
+        verify(chargingPortRepository).save(portToSave);
+    }
+
+    @Test
+    void createChargingPort_ShouldThrow_WhenStationNotFound() {
+        Long stationId = 99L;
+        ChargingPort port = new ChargingPort();
+
+        when(stationRepository.findById(stationId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () ->
+                chargingPortService.createChargingPort(stationId, port));
     }
 }

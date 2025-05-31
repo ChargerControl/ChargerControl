@@ -1,6 +1,7 @@
 package chargercontrol.operatorapi.controller;
 
 import chargercontrol.operatorapi.controller.ChargingPortController;
+import chargercontrol.operatorapi.dto.ChargingPortRequest;
 import chargercontrol.operatorapi.model.ChargingPort;
 import chargercontrol.operatorapi.model.ChargingPortStatus;
 import chargercontrol.operatorapi.service.ChargingPortService;
@@ -219,5 +220,71 @@ class ChargingPortControllerTest {
                 .andExpect(jsonPath("$.totalEnergyUsed").value(0.0));
 
         verify(chargingPortService).getTotalEnergyUsedByStation(stationId);
+    }
+
+    @Test
+    @DisplayName("Should create charging port successfully")
+    void createChargingPort_Success() throws Exception {
+        // Given
+        Long stationId = 1L;
+        ChargingPortRequest request = new ChargingPortRequest();
+        request.setPortIdentifier("PORT-001");
+        request.setStatus(ChargingPortStatus.AVAILABLE);
+        request.setEnergyUsed(0.0);
+
+        ChargingPort createdPort = new ChargingPort();
+        createdPort.setId(1L);
+        createdPort.setStationId(stationId);
+        createdPort.setPortIdentifier("PORT-001");
+        createdPort.setStatus(ChargingPortStatus.AVAILABLE);
+        createdPort.setEnergyUsed(0.0);
+
+        when(chargingPortService.createChargingPort(eq(stationId), any(ChargingPort.class)))
+                .thenReturn(createdPort);
+
+        // When & Then
+        mockMvc.perform(post("/apiV1/chargingports/station/{stationId}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.stationId").value(stationId))
+                .andExpect(jsonPath("$.portIdentifier").value("PORT-001"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.energyUsed").value(0.0));
+
+        verify(chargingPortService).createChargingPort(eq(stationId), any(ChargingPort.class));
+    }
+
+    @Test
+    @DisplayName("Should create charging port with different status types")
+    void createChargingPort_DifferentStatuses() throws Exception {
+        // Given
+        Long stationId = 1L;
+        ChargingPortRequest request = new ChargingPortRequest();
+        request.setPortIdentifier("PORT-002");
+        request.setStatus(ChargingPortStatus.OCCUPIED);
+        request.setEnergyUsed(25.5);
+
+        ChargingPort createdPort = new ChargingPort();
+        createdPort.setId(2L);
+        createdPort.setStationId(stationId);
+        createdPort.setPortIdentifier("PORT-002");
+        createdPort.setStatus(ChargingPortStatus.OCCUPIED);
+        createdPort.setEnergyUsed(25.5);
+
+        when(chargingPortService.createChargingPort(eq(stationId), any(ChargingPort.class)))
+                .thenReturn(createdPort);
+
+        // When & Then
+        mockMvc.perform(post("/apiV1/chargingports/station/{stationId}", stationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("OCCUPIED"))
+                .andExpect(jsonPath("$.energyUsed").value(25.5));
+
+        verify(chargingPortService).createChargingPort(eq(stationId), any(ChargingPort.class));
     }
 }

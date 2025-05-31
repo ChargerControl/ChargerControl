@@ -2,6 +2,7 @@ package chargercontrol.operatorapi.service;
 
 import chargercontrol.operatorapi.model.ChargingPort;
 import chargercontrol.operatorapi.model.ChargingPortStatus;
+import chargercontrol.operatorapi.model.Station;
 import chargercontrol.operatorapi.repository.ChargingPortRepository;
 import chargercontrol.operatorapi.repository.StationRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -45,5 +46,25 @@ public class ChargingPortService {
         return ports.stream()
                 .mapToDouble(ChargingPort::getEnergyUsed)
                 .sum();
+    }
+
+    @Transactional
+    public ChargingPort createChargingPort(Long stationId, ChargingPort chargingPort) {
+        Station station = stationRepository.findById(stationId)
+                .orElseThrow(() -> new EntityNotFoundException("Station not found with id: " + stationId));
+        
+        chargingPort.setStation(station);
+        
+        // Ensure new ports are initialized with a default status if not provided
+        if (chargingPort.getStatus() == null) {
+            chargingPort.setStatus(ChargingPortStatus.AVAILABLE);
+        }
+        
+        // Initialize energyUsed if not provided
+        if (chargingPort.getEnergyUsed() == null) {
+            chargingPort.setEnergyUsed(0.0);
+        }
+        
+        return chargingPortRepository.save(chargingPort);
     }
 }
