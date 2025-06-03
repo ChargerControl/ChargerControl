@@ -1,4 +1,4 @@
-/* 
+
 
 package chargercontrol.userapi.controller;
 
@@ -112,4 +112,3 @@ public class UserController {
     }
 }
 
-*/

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box, Button, TextField, Typography, IconButton, InputAdornment, Paper, Link, Container
+  Box, Button, TextField, Typography, IconButton, InputAdornment, Paper, Link
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -10,6 +10,14 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   const handleSetEmail = (value) => {
     localStorage.setItem("userEmail", value || "");
     const parts = value.split("@");
@@ -17,14 +25,12 @@ function Login() {
     setEmail(value);
   };
 
-  const handleSetPassword = (value) => setPassword(value);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8080/apiV1/auth/login", {
+      const response = await fetch("http://localhost:8080/apiV1/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -35,9 +41,10 @@ function Login() {
       const data = await response.json();
 
       if (data.jwt) {
-        localStorage.setItem("authToken", data.jwt);
+        localStorage.setItem("jwt", data.jwt);
         localStorage.setItem("isLoggedIn", "true");
         window.dispatchEvent(new Event("storage"));
+        window.location.href = "/";
       } else {
         throw new Error("Token not found in the API response.");
       }
@@ -77,7 +84,7 @@ function Login() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dark overlay for better contrast
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
             zIndex: 1,
           },
         }}
@@ -106,10 +113,10 @@ function Login() {
           backdropFilter: 'blur(10px)',
         }}
       >
-        <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
           Welcome back!
         </Typography>
-        <Typography variant="body1" color="text.secondary" gutterBottom mb={3}>
+        <Typography variant="body1" color="text.secondary" mb={3}>
           Enter your credentials to access your account
         </Typography>
 
@@ -133,7 +140,6 @@ function Login() {
             label="Email Address"
             variant="outlined"
             fullWidth
-            margin="normal"
             type="email"
             value={email}
             onChange={(e) => handleSetEmail(e.target.value)}
@@ -146,10 +152,9 @@ function Login() {
             label="Password"
             variant="outlined"
             fullWidth
-            margin="normal"
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={(e) => handleSetPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
             sx={{ mb: 2 }}
             InputProps={{

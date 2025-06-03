@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box, Button, TextField, Typography, IconButton, InputAdornment, Paper, Link, Container
+  Box, Button, TextField, Typography, IconButton, InputAdornment, Paper, Link
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -13,18 +13,26 @@ function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden'; // Disable scrolling
+
+    return () => {
+      document.body.style.overflow = originalStyle; // Restore on unmount
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    // Check if passwords match
     if (password !== confirmPassword) {
       setError("Passwords don't match");
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:8080/apiV1/auth/register", {
+      const response = await fetch("http://localhost:8080/apiV1/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -36,18 +44,19 @@ function Register() {
       }
 
       const data = await response.json();
-      
-      // Handle successful registration
-      // Redirect to login or automatically log in the user
-      window.location.href = "/login"; // Redirect to login page after successful registration
-      
+      console.log("Registration successful:", data);
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("jwt", data.jwt);
+      window.dispatchEvent(new Event("storage")); // Trigger storage event to update state
+      window.location.href = "/";
+
     } catch (err) {
       console.error("Registration error:", err);
       setError(err.message);
     }
   };
 
-  const registerImage = require("../../Images/Register.png"); 
+  const registerImage = require("../../Images/Register.png");
 
   return (
     <Box
@@ -77,7 +86,7 @@ function Register() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dark overlay for better contrast
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
             zIndex: 1,
           },
         }}
@@ -89,12 +98,12 @@ function Register() {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            transform: 'translateY(50px)'
+            transform: 'translateY(50px)',
           }}
         />
       </Box>
 
-      {/* Registration Form Card */}
+      {/* Registration Form */}
       <Paper
         elevation={24}
         sx={{
@@ -141,7 +150,7 @@ function Register() {
             autoFocus
             sx={{ mb: 2 }}
           />
-          
+
           <TextField
             label="Email Address"
             variant="outlined"
@@ -153,7 +162,7 @@ function Register() {
             required
             sx={{ mb: 2 }}
           />
-          
+
           <TextField
             label="Password"
             variant="outlined"
@@ -177,7 +186,7 @@ function Register() {
               ),
             }}
           />
-          
+
           <TextField
             label="Confirm Password"
             variant="outlined"
@@ -207,7 +216,7 @@ function Register() {
             fullWidth
             variant="contained"
             size="large"
-            sx={{ 
+            sx={{
               py: 1.5,
               textTransform: 'none',
               fontWeight: 'bold',
