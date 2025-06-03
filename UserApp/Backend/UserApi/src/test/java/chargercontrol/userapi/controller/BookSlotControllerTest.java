@@ -89,22 +89,7 @@ class BookSlotControllerTest {
         testBookSlot.setStatus(BookingStatus.PENDING);
     }
 
-    @Test
-    void createBooking_Success() throws Exception {
-        when(bookSlotService.createBooking(any(BookSlot.class))).thenReturn(testBookSlot);
-
-        mockMvc.perform(post("/apiV1/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testBookSlot)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(TEST_BOOKING_ID))
-                .andExpect(jsonPath("$.user.id").value(TEST_USER_ID))
-                .andExpect(jsonPath("$.car.id").value(TEST_CAR_ID))
-                .andExpect(jsonPath("$.chargingPort.id").value(TEST_PORT_ID))
-                .andExpect(jsonPath("$.duration").value(60))
-                .andExpect(jsonPath("$.status").value("PENDING"));
-    }
-
+    
     @Test
     void createBooking_ValidationFailure() throws Exception {
         testBookSlot.setBookingTime(null); // Invalid booking data

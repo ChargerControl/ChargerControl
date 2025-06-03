@@ -103,7 +103,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
   // Função para atualizar a estação
   const updateStation = async (stationId, updatedData) => {
     try {
-      const response = await fetch(`http://localhost:8080/apiV1/stations/${stationId}`, {
+      const response = await fetch(`http://localhost:8081/apiV1/stations/${stationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

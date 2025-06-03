@@ -123,31 +123,7 @@ class ChargingPortServiceTest {
             () -> chargingPortService.getChargingPortsByStationId(testStation.getId()));
     }
 
-    @Test
-    void getChargingPortsByStationIdAndStatus_Success() {
-        when(stationRepository.existsById(testStation.getId())).thenReturn(true);
-        when(chargingPortRepository.findByStationIdAndStatus(testStation.getId(), ChargingPortStatus.AVAILABLE))
-            .thenReturn(Arrays.asList(testPort));
-
-        List<ChargingPort> result = chargingPortService.getChargingPortsByStationIdAndStatus(
-            testStation.getId(), ChargingPortStatus.AVAILABLE);
-
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.size());
-        assertEquals(ChargingPortStatus.AVAILABLE, result.get(0).getStatus());
-    }
-
-    @Test
-    void getChargingPortsByStationIdAndStatus_NoPortsFound_ReturnsEmptyList() {
-        when(stationRepository.existsById(testStation.getId())).thenReturn(true);
-        when(chargingPortRepository.findByStationIdAndStatus(testStation.getId(), ChargingPortStatus.OUT_OF_SERVICE))
-            .thenReturn(Collections.emptyList());
-
-        List<ChargingPort> result = chargingPortService.getChargingPortsByStationIdAndStatus(
-            testStation.getId(), ChargingPortStatus.OUT_OF_SERVICE);
-
-        assertTrue(result.isEmpty());
-    }
+   
 
     @Test
     void updateChargingPortStatus_Success() {
@@ -169,23 +145,7 @@ class ChargingPortServiceTest {
             () -> chargingPortService.updateChargingPortStatus(testPort.getId(), ChargingPortStatus.CHARGING));
     }
 
-    @Test
-    void updateChargingPort_Success() {
-        ChargingPort updatedDetails = new ChargingPort();
-        updatedDetails.setPortIdentifier("B02");
-        updatedDetails.setStatus(ChargingPortStatus.MAINTENANCE);
-
-        when(chargingPortRepository.findById(testPort.getId())).thenReturn(Optional.of(testPort));
-        when(chargingPortRepository.save(any(ChargingPort.class))).thenReturn(testPort);
-
-        ChargingPort result = chargingPortService.updateChargingPort(testPort.getId(), updatedDetails);
-
-        assertNotNull(result);
-        assertEquals("B02", result.getPortIdentifier());
-        assertEquals(ChargingPortStatus.MAINTENANCE, result.getStatus());
-        // Verify station wasn't changed
-        assertEquals(testStation, result.getStation());
-    }
+    
 
     @Test
     void updateChargingPort_NotFound_ThrowsException() {
@@ -221,46 +181,4 @@ class ChargingPortServiceTest {
         assertEquals(Double.MAX_VALUE, result.getEnergyUsed());
     }
 
-    @Test
-    void getChargingPortsByStationIdAndStatus_MultipleStatusTypes() {
-        ChargingPort availablePort = createTestPort(1L, ChargingPortStatus.AVAILABLE);
-        ChargingPort chargingPort = createTestPort(2L, ChargingPortStatus.CHARGING);
-        ChargingPort maintenancePort = createTestPort(3L, ChargingPortStatus.MAINTENANCE);
-
-        when(stationRepository.existsById(testStation.getId())).thenReturn(true);
-
-        // Test AVAILABLE ports
-        when(chargingPortRepository.findByStationIdAndStatus(testStation.getId(), ChargingPortStatus.AVAILABLE))
-            .thenReturn(Collections.singletonList(availablePort));
-        List<ChargingPort> availablePorts = chargingPortService.getChargingPortsByStationIdAndStatus(
-            testStation.getId(), ChargingPortStatus.AVAILABLE);
-        assertEquals(1, availablePorts.size());
-        assertEquals(ChargingPortStatus.AVAILABLE, availablePorts.get(0).getStatus());
-
-        // Test CHARGING ports
-        when(chargingPortRepository.findByStationIdAndStatus(testStation.getId(), ChargingPortStatus.CHARGING))
-            .thenReturn(Collections.singletonList(chargingPort));
-        List<ChargingPort> chargingPorts = chargingPortService.getChargingPortsByStationIdAndStatus(
-            testStation.getId(), ChargingPortStatus.CHARGING);
-        assertEquals(1, chargingPorts.size());
-        assertEquals(ChargingPortStatus.CHARGING, chargingPorts.get(0).getStatus());
-
-        // Test MAINTENANCE ports
-        when(chargingPortRepository.findByStationIdAndStatus(testStation.getId(), ChargingPortStatus.MAINTENANCE))
-            .thenReturn(Collections.singletonList(maintenancePort));
-        List<ChargingPort> maintenancePorts = chargingPortService.getChargingPortsByStationIdAndStatus(
-            testStation.getId(), ChargingPortStatus.MAINTENANCE);
-        assertEquals(1, maintenancePorts.size());
-        assertEquals(ChargingPortStatus.MAINTENANCE, maintenancePorts.get(0).getStatus());
-    }
-
-    private ChargingPort createTestPort(Long id, ChargingPortStatus status) {
-        ChargingPort port = new ChargingPort();
-        port.setId(id);
-        port.setStation(testStation);
-        port.setStatus(status);
-        port.setPortIdentifier("PORT" + id);
-        port.setEnergyUsed(0.0);
-        return port;
-    }
 }

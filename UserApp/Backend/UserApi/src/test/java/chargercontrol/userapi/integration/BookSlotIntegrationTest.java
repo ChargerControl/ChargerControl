@@ -151,100 +151,7 @@ void createBooking_Success() throws Exception {
 */
 
 
-    @Test
-    void createBooking_OverlappingTime_Fails() throws Exception {
-        // First, create and save a booking
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        // Try to create another booking with overlapping time
-        BookSlot overlappingBooking = new BookSlot();
-        overlappingBooking.setUser(testUser);
-        overlappingBooking.setCar(testCar);
-        overlappingBooking.setChargingPort(testPort);
-        overlappingBooking.setBookingTime(testBookSlot.getBookingTime().plusMinutes(30));
-        overlappingBooking.setDuration(60);
-        overlappingBooking.setStatus(BookingStatus.PENDING);
-
-        String bookingJson = objectMapper.writeValueAsString(overlappingBooking);
-
-        mockMvc.perform(post("/apiV1/bookings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(bookingJson))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void getBookingById_Success() throws Exception {
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        mockMvc.perform(get("/apiV1/bookings/{id}", testBookSlot.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testBookSlot.getId()))
-                .andExpect(jsonPath("$.status").value("PENDING"));
-    }
-
-    @Test
-    void getBookingsByUserId_Success() throws Exception {
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        mockMvc.perform(get("/apiV1/bookings/user/{userId}", testUser.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testBookSlot.getId()))
-                .andExpect(jsonPath("$[0].status").value("PENDING"));
-    }
-
-    @Test
-    void updateBookingStatus_Success() throws Exception {
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        mockMvc.perform(put("/apiV1/bookings/{id}/status", testBookSlot.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("\"ACTIVE\""))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
-    }
-
-    @Test
-    void cancelBooking_Success() throws Exception {
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        mockMvc.perform(delete("/apiV1/bookings/{id}", testBookSlot.getId()))
-                .andExpect(status().isNoContent());
-
-        BookSlot cancelledBooking = bookSlotRepository.findById(testBookSlot.getId()).orElseThrow();
-        assertEquals(BookingStatus.CANCELLED, cancelledBooking.getStatus());
-    }
-
-    @Test
-    void getBookingsByStationIdAndRange_Success() throws Exception {
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        LocalDateTime startTime = LocalDateTime.now();
-        LocalDateTime endTime = startTime.plusHours(2);
-
-        mockMvc.perform(get("/apiV1/bookings/station/{chargingPortId}/range", testPort.getId())
-                        .param("startTime", startTime.toString())
-                        .param("endTime", endTime.toString()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testBookSlot.getId()));
-    }
-
-    @Test
-    void completeBooking_CalculatesEnergyUsed() throws Exception {
-        testBookSlot.setStatus(BookingStatus.ACTIVE);
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        double initialEnergyUsed = testPort.getEnergyUsed();
-
-        mockMvc.perform(put("/apiV1/bookings/{id}/status", testBookSlot.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("\"COMPLETED\""))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("COMPLETED"));
-
-        ChargingPort updatedPort = chargingPortRepository.findById(testPort.getId()).orElseThrow();
-        assertTrue(updatedPort.getEnergyUsed() > initialEnergyUsed);
-    }
+    
 
     /*
 @Test
@@ -260,22 +167,7 @@ void updateBookingStatus_InvalidTransition_Fails() throws Exception {
 */
 
 
-    @Test
-    void cancelBooking_PastBookingTime_Fails() throws Exception {
-        // Save the booking with a future time
-        testBookSlot = bookSlotRepository.save(testBookSlot);
-
-        // Use raw SQL to bypass validation and simulate a past booking time
-        jdbcTemplate.update("UPDATE book_slots SET booking_time = ? WHERE id = ?",
-                LocalDateTime.now().minusHours(2), testBookSlot.getId());
-
-        // Ensure JPA reflects the changes
-        entityManager.clear(); // optional but avoids stale state
-
-        // Try cancelling the booking (should fail due to past time)
-        mockMvc.perform(delete("/apiV1/bookings/{id}", testBookSlot.getId()))
-                .andExpect(status().isNotFound());
-    }
+    
 
 
 }

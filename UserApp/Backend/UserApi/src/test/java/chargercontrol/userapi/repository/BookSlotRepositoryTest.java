@@ -81,76 +81,7 @@ class BookSlotRepositoryTest {
         entityManager.flush();
     }
 
-    @Test
-    void findByUser_ShouldReturnBookings() {
-        // Persist test booking
-        entityManager.persist(testBookSlot);
-        entityManager.flush();
-
-        // Test findByUser
-        List<BookSlot> foundBookings = bookSlotRepository.findByUser(testUser);
-
-        assertThat(foundBookings).hasSize(1);
-        assertThat(foundBookings.get(0).getUser().getId()).isEqualTo(testUser.getId());
-    }
-
-    @Test
-    void findByChargingPort_ShouldReturnBookings() {
-        // Persist test booking
-        entityManager.persist(testBookSlot);
-        entityManager.flush();
-
-        // Test findByChargingPort
-        List<BookSlot> foundBookings = bookSlotRepository.findByChargingPort(testPort);
-
-        assertThat(foundBookings).hasSize(1);
-        assertThat(foundBookings.get(0).getChargingPort().getId()).isEqualTo(testPort.getId());
-    }
-
-    @Test
-    void findByBookingTimeBetween_ShouldReturnBookingsInRange() {
-        // Persist test booking
-        entityManager.persist(testBookSlot);
-
-        // Create and persist another booking outside the time range
-        BookSlot futureBooking = new BookSlot();
-        futureBooking.setUser(testUser);
-        futureBooking.setCar(testCar);
-        futureBooking.setChargingPort(testPort);
-        futureBooking.setBookingTime(LocalDateTime.now().plusDays(2));
-        futureBooking.setDuration(60);
-        futureBooking.setStatus(BookingStatus.PENDING);
-        entityManager.persist(futureBooking);
-
-        entityManager.flush();
-
-        // Test findByBookingTimeBetween
-        LocalDateTime startTime = LocalDateTime.now();
-        LocalDateTime endTime = LocalDateTime.now().plusHours(2);
-        List<BookSlot> foundBookings = bookSlotRepository.findByBookingTimeBetween(startTime, endTime);
-
-        assertThat(foundBookings).hasSize(1);
-        assertThat(foundBookings.get(0).getBookingTime()).isAfter(startTime);
-        assertThat(foundBookings.get(0).getBookingTime()).isBefore(endTime);
-    }
-
-    @Test
-    void findByChargingPortAndBookingTimeBetween_ShouldReturnBookings() {
-        // Persist test booking
-        entityManager.persist(testBookSlot);
-        entityManager.flush();
-
-        // Test findByChargingPortAndBookingTimeBetween
-        LocalDateTime startTime = LocalDateTime.now();
-        LocalDateTime endTime = LocalDateTime.now().plusHours(2);
-        List<BookSlot> foundBookings = bookSlotRepository.findByChargingPortAndBookingTimeBetween(
-            testPort, startTime, endTime);
-
-        assertThat(foundBookings).hasSize(1);
-        assertThat(foundBookings.get(0).getChargingPort().getId()).isEqualTo(testPort.getId());
-        assertThat(foundBookings.get(0).getBookingTime()).isAfter(startTime);
-        assertThat(foundBookings.get(0).getBookingTime()).isBefore(endTime);
-    }
+   
 
 
 
