@@ -6,6 +6,7 @@ import UserProfile from './Components/User_Profile/User_Page';
 import Navbar from './Components/Navbar';
 import Map from './Components/Charger_Location/ChargerMap';
 import Booking from './Components/Booking/ChargerMap';
+import Home from './Components/Home/Home';
 import './App.css';
 
 function App() {
@@ -18,9 +19,7 @@ function App() {
           <Route path="/user" element={<UserProfile />} />
           <Route path="/charging_locations" element={<Map />} />
           <Route path="/charging_booking" element={<Booking />} />
-          <Route path="/" element={<header className="App-header">
-            <p>Welcome to ChargerControl</p>
-          </header>} />
+          <Route path="/" element={<Home/>}/>
         </Routes>
       </div>
     </Router></>

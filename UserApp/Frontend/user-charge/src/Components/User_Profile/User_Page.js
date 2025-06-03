@@ -14,18 +14,26 @@ import {
   IconButton,
   Badge,
   Snackbar,
-  Alert
+  Alert,
+  Card,
+  CardContent,
+  Chip,
+  useTheme
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
   Close as CloseIcon,
   PhotoCamera as PhotoCameraIcon,
-  Notifications as NotificationsIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  LocationOn as LocationIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 import Cars from './Cars';
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -47,6 +55,7 @@ function TabPanel(props) {
 }
 
 function UserProfile() {
+  const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -56,8 +65,8 @@ function UserProfile() {
     name: 'Maria Silva',
     email: 'maria.silva@example.com',
     phone: '+351 912 345 678',
-    location: 'Lisboa, Portugal',
-    joinDate: 'Outubro 2023'
+    location: 'Lisbon, Portugal',
+    joinDate: 'October 2023'
   });
 
   const [editData, setEditData] = useState({...userData});
@@ -102,7 +111,7 @@ function UserProfile() {
   const handleSaveProfile = () => {
     setUserData({...editData});
     setEditMode(false);
-    setSuccessMessage("Perfil atualizado com sucesso!");
+    setSuccessMessage("Profile updated successfully!");
     
     setTimeout(() => {
       setSuccessMessage(null);
@@ -117,195 +126,332 @@ function UserProfile() {
 
   const profileImage = require("../../Images/zezinho.png");
 
-
   return (
     <Box
-      sx={{
-        minHeight: '100vh',
-        width: '100%',
-        position: 'relative',
-        overflow: 'auto',
-        pb: 5
-      }}
-    >
-      <Box
-        sx={{
-          height: '250px',
-          width: '100%',
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1,
-          },
-        }}
-      >
-        
-        
-        
-      </Box>
+  sx={{
+    minHeight: '100vh',
+    background: '#1e3c72', // dark blue solid
+    pb: 4
+  }}
+>
+  {/* Header Background */}
+  <Box
+    sx={{
+      height: '200px',
+      width: '100%',
+      position: 'relative',
+      background: 'rgba(30, 60, 114, 0.9)', // dark blue with transparency
+    }}
+  />
 
-      <Container maxWidth="md" sx={{ mt: -10, position: 'relative', zIndex: 2 }}>
+      <Container maxWidth="lg" sx={{ mt: -12, position: 'relative', zIndex: 2 }}>
         {/* Profile Header Card */}
-        <Paper
-          elevation={8}
+        <Card
+          elevation={0}
           sx={{
-            p: { xs: 3, sm: 4 },
-            borderRadius: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             mb: 3,
+            overflow: 'visible'
           }}
         >
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} sm="auto" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                
-              >
-                <Avatar
-                  src={profileImage}
-                  alt={userData.name}
-                  sx={{ 
-                    width: { xs: 100, sm: 120 }, 
-                    height: { xs: 100, sm: 120 },
-                    border: '4px solid white'
-                  }}
-                />
-              </Badge>
-            </Grid>
-            
-            <Grid item xs={12} sm>
-              <Box sx={{ pl: { sm: 2 }, textAlign: { xs: 'center', sm: 'left' } }}>
-                <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-                  {userData.name}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {userData.email}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Join date: {userData.joinDate}
-                </Typography>
-              </Box>
-            </Grid>
-            
-            
-          </Grid>
-        </Paper>
-
-        {/* Main Content Section */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            borderRadius: 2,
-            backgroundColor: 'white',
-          }}
-        >
-          {/* Tabs Navigation */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-            <Tabs 
-              value={tabValue} 
-              onChange={handleTabChange} 
-              aria-label="profile tabs"
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab label="Personal Information" />
-              <Tab label="Charger information" />
-              <Tab label="Cars" />
-            </Tabs>
-          </Box>
-
-          
-          <TabPanel value={tabValue} index={0}>
-            <Grid container spacing={10}>
+          <CardContent sx={{ p: 4 }}>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} sm="auto" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  badgeContent={
+                    <IconButton
+                      size="small"
+                      sx={{ 
+                        bgcolor: 'primary.main', 
+                        color: 'white',
+                        '&:hover': { bgcolor: 'primary.dark' }
+                      }}
+                    >
+                      <PhotoCameraIcon fontSize="small" />
+                    </IconButton>
+                  }
+                >
+                  <Avatar
+                    src={profileImage}
+                    alt={userData.name}
+                    sx={{ 
+                      width: 120,
+                      height: 120,
+                      border: '4px solid white',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                </Badge>
+              </Grid>
               
-
-              <Grid item xs={20} md={10}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Name
-                </Typography>
-                
-                  <Typography variant="body1" gutterBottom>
+              <Grid item xs={12} sm>
+                <Box sx={{ pl: { sm: 3 }, textAlign: { xs: 'center', sm: 'left' } }}>
+                  <Typography 
+                    variant="h4" 
+                    component="h1" 
+                    fontWeight="700" 
+                    gutterBottom
+                    sx={{ color: 'text.primary' }}
+                  >
                     {userData.name}
                   </Typography>
-     
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Email
-                </Typography>
-                
-                  <Typography variant="body1" gutterBottom>
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
                     {userData.email}
                   </Typography>
+                </Box>
+              </Grid>
               
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Telefone
-                </Typography>
-                
-                  <Typography variant="body1" gutterBottom>
-                    {userData.phone}
-                  </Typography>
-            
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Location
-                </Typography>
-                {editMode ? (
-                  <TextField
-                    name="location"
-                    value={editData.location}
-                    onChange={handleInputChange}
-                    fullWidth
+              <Grid item xs={12} sm="auto">
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'center', sm: 'flex-end' } }}>
+                  <Button
                     variant="outlined"
-                    size="small"
-                  />
-                ) : (
-                  <Typography variant="body1" gutterBottom>
-                    {userData.location}
-                  </Typography>
-                )}
+                    startIcon={<LogoutIcon />}
+                    onClick={handleLogout}
+                    sx={{ 
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 600
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </Box>
               </Grid>
-
-              
-              
             </Grid>
-          </TabPanel>
+          </CardContent>
+        </Card>
 
-          <TabPanel value={tabValue} index={1}>
-            <Box sx={{ my: 4, textAlign: 'center' }}>
-              <Typography variant="h6" color="text.secondary">
-                //ir buscar charger info para aqui
-              </Typography>
-              
+        {/* Main Content */}
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          }}
+        >
+          <CardContent sx={{ p: 0 }}>
+            {/* Tabs */}
+            <Box sx={{ px: 4, pt: 3 }}>
+              <Tabs 
+                value={tabValue} 
+                onChange={handleTabChange} 
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    minHeight: 48,
+                    px: 3
+                  },
+                  '& .Mui-selected': {
+                    color: 'primary.main'
+                  }
+                }}
+              >
+                <Tab label="Personal Information" />
+                <Tab label="Charger Information" />
+                <Tab label="My Vehicles" />
+              </Tabs>
+              <Divider sx={{ mt: 2 }} />
             </Box>
-          </TabPanel>
 
-   
-          <TabPanel value={tabValue} index={2}>
-            <Grid container spacing={3}>
-              <Cars></Cars>
-            </Grid>
-          </TabPanel>
-        </Paper>
+            {/* Personal Information Tab */}
+            <TabPanel value={tabValue} index={0}>
+              <Box sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                  <Typography variant="h5" fontWeight="600">
+                    Personal Information
+                  </Typography>
+                  <Button
+                    variant={editMode ? "outlined" : "contained"}
+                    startIcon={editMode ? <CloseIcon /> : <EditIcon />}
+                    onClick={handleEditToggle}
+                    sx={{ 
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 3
+                    }}
+                  >
+                    {editMode ? 'Cancel' : 'Edit Profile'}
+                  </Button>
+                </Box>
 
-        
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <PersonIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Full Name
+                        </Typography>
+                      </Box>
+                      {editMode ? (
+                        <TextField
+                          name="name"
+                          value={editData.name}
+                          onChange={handleInputChange}
+                          fullWidth
+                          variant="outlined"
+                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                        />
+                      ) : (
+                        <Typography variant="h6" fontWeight="500">
+                          {userData.name}
+                        </Typography>
+                      )}
+                    </Card>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <EmailIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Email
+                        </Typography>
+                      </Box>
+                      <Typography variant="h6" fontWeight="500">
+                        {userData.email}
+                      </Typography>
+                    </Card>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <PhoneIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Phone
+                        </Typography>
+                      </Box>
+                      {editMode ? (
+                        <TextField
+                          name="phone"
+                          value={editData.phone}
+                          onChange={handleInputChange}
+                          fullWidth
+                          variant="outlined"
+                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                        />
+                      ) : (
+                        <Typography variant="h6" fontWeight="500">
+                          {userData.phone}
+                        </Typography>
+                      )}
+                    </Card>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <LocationIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Location
+                        </Typography>
+                      </Box>
+                      {editMode ? (
+                        <TextField
+                          name="location"
+                          value={editData.location}
+                          onChange={handleInputChange}
+                          fullWidth
+                          variant="outlined"
+                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                        />
+                      ) : (
+                        <Typography variant="h6" fontWeight="500">
+                          {userData.location}
+                        </Typography>
+                      )}
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                {editMode && (
+                  <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={handleEditToggle}
+                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<SaveIcon />}
+                      onClick={handleSaveProfile}
+                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                    >
+                      Save Changes
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            </TabPanel>
+
+            {/* Charger Information Tab */}
+            <TabPanel value={tabValue} index={1}>
+              <Box sx={{ p: 4, textAlign: 'center', py: 8 }}>
+                <Box
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.light',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 3
+                  }}
+                >
+                  <SettingsIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+                </Box>
+                <Typography variant="h5" fontWeight="600" gutterBottom>
+                  Charger Information
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400, mx: 'auto' }}>
+                  This section will contain information about your registered chargers.
+                </Typography>
+              </Box>
+            </TabPanel>
+
+            {/* Cars Tab */}
+            <TabPanel value={tabValue} index={2}>
+              <Box sx={{ p: 4 }}>
+                <Cars />
+              </Box>
+            </TabPanel>
+          </CardContent>
+        </Card>
       </Container>
+
+      {/* Success Message */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSuccessMessage(null)} 
+          severity="success" 
+          variant="filled"
+          sx={{ borderRadius: 2 }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

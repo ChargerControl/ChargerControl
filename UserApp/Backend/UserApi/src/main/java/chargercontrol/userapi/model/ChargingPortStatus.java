@@ -6,5 +6,5 @@ public enum ChargingPortStatus {
     OCCUPIED_NOT_CHARGING, // e.g., car plugged in but not drawing power or waiting
     OUT_OF_SERVICE,
     MAINTENANCE,
-    UNKNOWN
+    UNKNOWN, OCCUPIED, OUT_OF_ORDER, IN_USE
 }
