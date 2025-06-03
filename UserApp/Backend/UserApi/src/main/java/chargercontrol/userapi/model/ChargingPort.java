@@ -1,5 +1,8 @@
 package chargercontrol.userapi.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -44,6 +47,17 @@ public class ChargingPort {
     // Campo adicional para referenciar o ID da station (útil para serialização)
     @Transient
     private Long stationId;
+
+    @OneToMany(mappedBy = "chargingPort", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookSlot> bookSlots = new ArrayList<>();
+
+    public List<BookSlot> getBookSlots() {
+    return bookSlots;
+    }
+
+    public void setBookSlots(List<BookSlot> bookSlots) {
+        this.bookSlots = bookSlots;
+    }
     
     // Método para popular o stationId quando necessário
     @PostLoad

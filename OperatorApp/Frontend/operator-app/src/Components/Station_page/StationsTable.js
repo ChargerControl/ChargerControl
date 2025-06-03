@@ -164,7 +164,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para buscar portas de carregamento
   const fetchChargingPorts = async (stationId) => {
     try {
-      const response = await fetch(`http://localhost:8080/apiV1/chargingports/station/${stationId}`);
+      const response = await fetch(`http://localhost:8081/apiV1/chargingports/station/${stationId}`);
       
       if (!response.ok) {
         // Se não for JSON válido (ex: HTML de erro), usar status como mensagem
@@ -199,7 +199,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para buscar detalhes de uma porta específica via endpoint da estação
   const fetchPortDetails = async (stationId, portId) => {
     try {
-      const response = await fetch(`http://localhost:8080/apiV1/chargingports/station/${stationId}`);
+      const response = await fetch(`http://localhost:8081/apiV1/chargingports/station/${stationId}`);
       
       if (!response.ok) {
         let errorMessage;
@@ -237,7 +237,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para eliminar porta de carregamento
   const deleteChargingPort = async (portId) => {
     try {
-      const response = await fetch(`http://localhost:8080/apiV1/chargingports/${portId}`, {
+      const response = await fetch(`http://localhost:8081/apiV1/chargingports/${portId}`, {
         method: 'DELETE'
       });
 
@@ -260,7 +260,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para eliminar estação
   const deleteStation = async (stationId) => {
     try {
-      const response = await fetch(`http://localhost:8080/apiV1/stations/${stationId}`, {
+      const response = await fetch(`http://localhost:8081/apiV1/stations/${stationId}`, {
         method: 'DELETE'
       });
 
@@ -496,7 +496,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   const handleAddPortSubmit = async () => {
     setAddPortDialog(prev => ({ ...prev, loading: true, error: '' }));
     try {
-      const response = await fetch(`http://localhost:8080/apiV1/chargingports/station/${chargingPortsDialog.stationId}`, {
+      const response = await fetch(`http://localhost:8081/apiV1/chargingports/station/${chargingPortsDialog.stationId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

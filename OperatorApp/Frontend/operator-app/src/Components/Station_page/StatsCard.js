@@ -39,17 +39,17 @@ const StatsCards = () => {
       setLoading(true);
       
       // Get all stations
-      const stationsResponse = await fetch('http://localhost:8080/apiV1/stations');
+      const stationsResponse = await fetch('http://localhost:8081/apiV1/stations');
       const stations = await stationsResponse.json();
       
       // Get available stations (assuming available stations are "online")
-      const availableStationsResponse = await fetch('http://localhost:8080/apiV1/stations/available/true');
+      const availableStationsResponse = await fetch('http://localhost:8081/apiV1/stations/available/true');
       const onlineStations = await availableStationsResponse.json();
       
       // Get all charging ports by status
       const [availablePortsResponse, chargingPortsResponse] = await Promise.all([
-        fetch('http://localhost:8080/apiV1/chargingports/status/AVAILABLE'),
-        fetch('http://localhost:8080/apiV1/chargingports/status/CHARGING')
+        fetch('http://localhost:8081/apiV1/chargingports/status/AVAILABLE'),
+        fetch('http://localhost:8081/apiV1/chargingports/status/CHARGING')
       ]);
       
       const availablePorts = await availablePortsResponse.json();
@@ -59,7 +59,7 @@ const StatsCards = () => {
       let totalEnergy = 0;
       const energyPromises = stations.map(async (station) => {
         try {
-          const energyResponse = await fetch(`http://localhost:8080/apiV1/chargingports/station/${station.id}/stats/energy`);
+          const energyResponse = await fetch(`http://localhost:8081/apiV1/chargingports/station/${station.id}/stats/energy`);
           const energy = await energyResponse.json();
           // Ensure energy is a number
           const numericEnergy = parseFloat(energy) || 0;
@@ -76,7 +76,7 @@ const StatsCards = () => {
       }, 0);
       
       // Get out of order ports for alerts
-      const outOfOrderResponse = await fetch('http://localhost:8080/apiV1/chargingports/status/OUT_OF_ORDER');
+      const outOfOrderResponse = await fetch('http://localhost:8081/apiV1/chargingports/status/OUT_OF_ORDER');
       const outOfOrderPorts = await outOfOrderResponse.json();
       
       setStats({

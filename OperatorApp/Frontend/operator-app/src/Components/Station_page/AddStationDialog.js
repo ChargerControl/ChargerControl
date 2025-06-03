@@ -62,7 +62,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
   // Função para chamar a API
   const createStation = async (stationData) => {
     try {
-      const response = await fetch('http://localhost:8080/apiV1/stations', {
+      const response = await fetch('http://localhost:8081/apiV1/stations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

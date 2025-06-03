@@ -67,4 +67,32 @@ public class ChargingPortService {
         
         return chargingPortRepository.save(chargingPort);
     }
+
+    public ChargingPort getChargingPortById(Long id) {
+    return chargingPortRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("ChargingPort not found with id: " + id));
+}
+
+@Transactional
+public ChargingPort updateChargingPortStatus(Long portId, ChargingPortStatus status) {
+    ChargingPort port = getChargingPortById(portId);
+    port.setStatus(status);
+    return chargingPortRepository.save(port);
+}
+
+
+@Transactional
+public ChargingPort updateChargingPort(Long portId, ChargingPort updatedPort) {
+    ChargingPort existing = getChargingPortById(portId);
+    existing.setStatus(updatedPort.getStatus());
+    existing.setEnergyUsed(updatedPort.getEnergyUsed());
+    return chargingPortRepository.save(existing);
+}
+
+
+public List<ChargingPort> getChargingPortsByStationIdAndStatus(Long stationId, ChargingPortStatus status) {
+    return chargingPortRepository.findByStationIdAndStatus(stationId, status);
+}
+
+
 }
