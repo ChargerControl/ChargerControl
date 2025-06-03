@@ -1,8 +1,10 @@
 package chargercontrol.userapi.controller;
 
-import chargercontrol.userapi.model.BookSlot;
-import chargercontrol.userapi.model.BookingStatus;
+import chargercontrol.userapi.jwt.JwtUtil;
+import chargercontrol.userapi.model.*;
 import chargercontrol.userapi.service.BookSlotService;
+import chargercontrol.userapi.service.StationService;
+import chargercontrol.userapi.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +23,21 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+
 @RestController
 @RequestMapping("/apiV1/bookings")
 @Tag(name = "Bookings", description = "APIs for managing bookings")
 public class BookSlotController {
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private StationService stationService;
 
     private final BookSlotService bookSlotService;
 
@@ -35,9 +50,37 @@ public class BookSlotController {
             @ApiResponse(responseCode = "201", description = "Booking created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookSlot.class))),
             @ApiResponse(responseCode = "400", description = "Invalid booking data")
     })
-    public ResponseEntity<BookSlot> createBooking(@Valid @RequestBody BookSlot bookSlot) {
+    public ResponseEntity<BookSlot> createBooking(@Valid @RequestBody BookRequest bookRequest) {
         try {
+            String email = jwtUtil.extractEmail(bookRequest.getJwtToken());
+            User user = userService.getUserByEmail(email);
+
+            Station station = stationService.getStationById(bookRequest.getStationId())
+                    .orElseThrow(() -> new RuntimeException("Station not found with id: " + bookRequest.getStationId()));;
+
+            ChargingPort chargingPort = station.getChargingPorts().stream()
+                    .filter(port -> port.getStatus() == ChargingPortStatus.AVAILABLE)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No available charging ports at this station"));
+
+            // Get the car from the request
+            Car car = user.getCars().stream()
+                    .filter(c -> c.getId().equals(bookRequest.getCarId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Car not found with id: " + bookRequest.getCarId()));
+
+            // Create the booking object
+            BookSlot bookSlot = new BookSlot();
+            bookSlot.setUser(user);
+            bookSlot.setChargingPort(chargingPort);
+            bookSlot.setCar(car);
+            bookSlot.setBookingTime(bookRequest.getStartTime());
+            bookSlot.setDuration(bookRequest.getDuration());
+            bookSlot.setStatus(BookingStatus.PENDING);
+
+            // Save the booking
             BookSlot newBooking = bookSlotService.createBooking(bookSlot);
+
             return new ResponseEntity<>(newBooking, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Consider a more specific error response

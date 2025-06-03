@@ -1,7 +1,10 @@
 package chargercontrol.userapi.controller;
 
+import chargercontrol.userapi.jwt.JwtUtil;
 import chargercontrol.userapi.model.Car;
+import chargercontrol.userapi.model.User;
 import chargercontrol.userapi.service.CarService;
+import chargercontrol.userapi.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,33 +26,62 @@ public class CarController {
 
     private final CarService carService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
+
     public CarController(CarService carService) {
         this.carService = carService;
     }
 
-    @PostMapping("/user/{userId}")
+    @PostMapping("/user/{jwtToken}/add")
     @Operation(summary = "Add a new car to a user", responses = {
             @ApiResponse(responseCode = "201", description = "Car added successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Car.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid car data"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "400", description = "Invalid token or car data")
     })
     public ResponseEntity<Car> addCarToUser(
-            @Parameter(description = "ID of the user to add the car to") @PathVariable Long userId,
+            @PathVariable String jwtToken,
             @Valid @RequestBody Car car) {
-        Car newCar = carService.addCarToUser(userId, car);
-        return new ResponseEntity<>(newCar, HttpStatus.CREATED);
+        try {
+            // Remove "Bearer " prefix if present
+            if (jwtToken.startsWith("Bearer ")) {
+                jwtToken = jwtToken.substring(7);
+            }
+
+            String email = jwtUtil.extractEmail(jwtToken);
+            User user = userService.getUserByEmail(email);
+            Car newCar = carService.addCarToUser(user.getId(), car);
+
+            return new ResponseEntity<>(newCar, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
-    @GetMapping("/user/{userId}")
-    @Operation(summary = "Get all cars for a user", responses = {
+    @GetMapping("/user/{jwtToken}")
+    @Operation(summary = "Get all cars for the authenticated user", responses = {
             @ApiResponse(responseCode = "200", description = "Cars retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Car.class))),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "400", description = "Invalid token or user not found")
     })
-    public ResponseEntity<List<Car>> getCarsByUserId(
-            @Parameter(description = "ID of the user whose cars to retrieve") @PathVariable Long userId) {
-        List<Car> cars = carService.getCarsByUserId(userId);
-        return ResponseEntity.ok(cars);
+    public ResponseEntity<List<Car>> getCarsByUserId(@PathVariable String jwtToken) {
+        try {
+
+            if (jwtToken.startsWith("Bearer ")) {
+                jwtToken = jwtToken.substring(7);
+            }
+
+            String email = jwtUtil.extractEmail(jwtToken);
+            User user = userService.getUserByEmail(email);
+            List<Car> cars = carService.getCarsByUserId(user.getId());
+
+            return ResponseEntity.ok(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
+
 
     @GetMapping("/{carId}")
     @Operation(summary = "Get a car by its ID", responses = {

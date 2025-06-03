@@ -1,4 +1,3 @@
-/* 
 
 
 package chargercontrol.userapi.service;
@@ -136,5 +135,3 @@ public class UserService {
     }
 }
 
-
-*/

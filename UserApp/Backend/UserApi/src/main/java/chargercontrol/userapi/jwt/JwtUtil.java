@@ -1,4 +1,4 @@
-/* 
+
 package chargercontrol.userapi.jwt;
 
 import io.jsonwebtoken.Claims;
@@ -69,4 +69,3 @@ public class JwtUtil {
     }
 }
 
-*/

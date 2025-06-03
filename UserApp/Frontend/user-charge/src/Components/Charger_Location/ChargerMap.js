@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Button, TextField, Typography, IconButton, InputAdornment, Paper, Link, Container,
-  Dialog, DialogTitle, DialogContent, DialogActions, Chip, CircularProgress, Alert
+  Dialog, DialogTitle, DialogContent, DialogActions, Chip, CircularProgress, Alert, MenuItem, Select, FormControl, InputLabel
 } from '@mui/material';
 import { Visibility, VisibilityOff, ElectricCar, Power, LocationOn, Info } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import BookingModal from './BookingModal';
 
 // Fix for default markers in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -72,6 +73,8 @@ function Map() {
   const [locationError, setLocationError] = useState(null);
   const [mapCenter, setMapCenter] = useState([39.5, -8.0]); // Default to Portugal center
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [cars, setCars] = useState([]);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
   // Component to handle map centering on user location (only once)
   const LocationMarker = ({ userLocation }) => {
@@ -188,6 +191,27 @@ function Map() {
     };
 
     fetchStations();
+  }, []);
+
+  // Fetch cars from API
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const jwtToken = localStorage.getItem('jwt');
+        const response = await fetch(`http://localhost:8080/apiV1/cars/user/${jwtToken}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setCars(data);
+      } catch (err) {
+        console.error('Error fetching cars:', err);
+      }
+    };
+
+    fetchCars();
   }, []);
 
   const handleStationClick = (station) => {
@@ -480,8 +504,7 @@ function Map() {
                 variant="outlined" 
                 startIcon={<ElectricCar />}
                 onClick={() => {
-                  // Aqui pode adicionar a lógica de reserva
-                  alert(`Reserva solicitada para ${selectedStation.name}`);
+                  setBookingModalOpen(true);
                 }}
               >
                 Reservar
@@ -500,6 +523,14 @@ function Map() {
           </>
         )}
       </Dialog>
+
+      {/* Booking Modal */}
+      <BookingModal 
+        open={bookingModalOpen} 
+        onClose={() => setBookingModalOpen(false)} 
+        station={selectedStation} 
+        cars={cars} 
+      />
     </Box>
   );
 }

@@ -1,6 +1,4 @@
-// comentar tudo
 
-/* 
 
 package chargercontrol.userapi.jwt;
 
@@ -92,4 +90,3 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 }
 
-*/

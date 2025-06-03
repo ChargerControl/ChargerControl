@@ -1,4 +1,4 @@
-/* 
+
 
 package chargercontrol.userapi.service;
 
@@ -41,4 +41,3 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 }
 
-*/
