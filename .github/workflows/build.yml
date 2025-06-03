@@ -54,10 +54,7 @@ jobs:
         id: xray-auth-userapi
         working-directory: UserApp/Backend/UserApi
         run: |
-          TOKEN=(curl -s -H "Content-Type: application/json" \
-            -X POST \
-            --data '{"client_id":"${{ secrets.XRAY_CLIENT_ID }}","client_secret":"${{ secrets.XRAY_CLIENT_SECRET }}"}' \
-            "https://xray.cloud.getxray.app/api/v1/authenticate" | tr -d '"')
+          TOKEN=(curl -s -H "Content-Type: application/json" -X POST --data '{"client_id":"${{ secrets.XRAY_CLIENT_ID }}","client_secret":"${{ secrets.XRAY_CLIENT_SECRET }}"}' "https://xray.cloud.getxray.app/api/v1/authenticate" | tr -d '"')
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
       - name: Import JUnit results to Xray Cloud (UserAPI)
