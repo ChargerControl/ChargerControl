@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Button, TextField, Typography, IconButton, InputAdornment, Paper, Link, Container,
-  Dialog, DialogTitle, DialogContent, DialogActions, Chip, CircularProgress, Alert, MenuItem, Select, FormControl, InputLabel
+  Dialog, DialogTitle, DialogContent, DialogActions, Chip, CircularProgress, Alert, MenuItem, Select, FormControl, InputLabel,
+  Card, CardContent, CardActions, List, ListItem, Divider
 } from '@mui/material';
-import { Visibility, VisibilityOff, ElectricCar, Power, LocationOn, Info } from '@mui/icons-material';
+import { Visibility, VisibilityOff, ElectricCar, Power, LocationOn, Info, Search } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -75,6 +76,8 @@ function Map() {
   const [mapInitialized, setMapInitialized] = useState(false);
   const [cars, setCars] = useState([]);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [hoveredStation, setHoveredStation] = useState(null);
 
   // Component to handle map centering on user location (only once)
   const LocationMarker = ({ userLocation }) => {
@@ -245,14 +248,22 @@ function Map() {
     return R * c;
   };
 
-  // Sort stations by distance from user
-  const sortedStations = userLocation 
-    ? [...stations].sort((a, b) => {
-        const distA = calculateDistance(userLocation.lat, userLocation.lng, a.latitude, a.longitude);
-        const distB = calculateDistance(userLocation.lat, userLocation.lng, b.latitude, b.longitude);
-        return distA - distB;
-      })
-    : stations;
+  // Filter and sort stations
+  const filteredAndSortedStations = React.useMemo(() => {
+    let filtered = stations.filter(station =>
+      station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      station.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (userLocation) {
+      filtered = filtered.map(station => ({
+        ...station,
+        distance: calculateDistance(userLocation.lat, userLocation.lng, station.latitude, station.longitude)
+      })).sort((a, b) => a.distance - b.distance);
+    }
+
+    return filtered;
+  }, [stations, searchTerm, userLocation]);
 
   const getChargingTypeLabel = (type) => {
     switch (type) {
@@ -265,6 +276,16 @@ function Map() {
       default:
         return type;
     }
+  };
+
+  const handleStationCardClick = (station) => {
+    setSelectedStation(station);
+    // Center map on selected station
+    setMapCenter([station.latitude, station.longitude]);
+  };
+
+  const handleStationCardHover = (station) => {
+    setHoveredStation(station);
   };
 
   if (loading) {
@@ -287,119 +308,265 @@ function Map() {
   }
 
   return (
-    <Box sx={{ height: '100vh', width: '100vw', position: 'relative' }}>
-      {error && (
-        <Alert 
-          severity="warning" 
-          sx={{ 
-            position: 'absolute', 
-            top: 10, 
-            left: 10, 
-            right: 10, 
-            zIndex: 1000 
-          }}
-        >
-          {error}
-        </Alert>
-      )}
-      
-      {locationError && (
-        <Alert 
-          severity="info" 
-          sx={{ 
-            position: 'absolute', 
-            top: error ? 70 : 10, 
-            left: 10, 
-            right: 10, 
-            zIndex: 1000 
-          }}
-        >
-          {locationError} - A usar localização padrão
-        </Alert>
-      )}
-      
-      <MapContainer
-        center={mapCenter}
-        zoom={userLocation ? 10 : 7}
-        style={{ height: '100%', width: '100%' }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
+    <Box sx={{ height: '100vh', width: '100vw', display: 'flex' }}>
+      {/* Left Side - Map */}
+      <Box sx={{ flex: 1, position: 'relative' }}>
+        {error && (
+          <Alert 
+            severity="warning" 
+            sx={{ 
+              position: 'absolute', 
+              top: 10, 
+              left: 10, 
+              right: 10, 
+              zIndex: 1000 
+            }}
+          >
+            {error}
+          </Alert>
+        )}
         
-        {/* User location marker */}
-        <LocationMarker userLocation={userLocation} />
+        {locationError && (
+          <Alert 
+            severity="info" 
+            sx={{ 
+              position: 'absolute', 
+              top: error ? 70 : 10, 
+              left: 10, 
+              right: 10, 
+              zIndex: 1000 
+            }}
+          >
+            {locationError} - A usar localização padrão
+          </Alert>
+        )}
         
-        {sortedStations.map((station) => {
-          const distance = userLocation 
-            ? calculateDistance(userLocation.lat, userLocation.lng, station.latitude, station.longitude)
-            : null;
-            
-          return (
-            <Marker
+        <MapContainer
+          center={mapCenter}
+          zoom={userLocation ? 10 : 7}
+          style={{ height: '100%', width: '100%' }}
+          key={`${mapCenter[0]}-${mapCenter[1]}`}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          
+          {/* User location marker */}
+          <LocationMarker userLocation={userLocation} />
+          
+          {filteredAndSortedStations.map((station) => {
+            const isHovered = hoveredStation?.id === station.id;
+            return (
+              <Marker
+                key={station.id}
+                position={[station.latitude, station.longitude]}
+                icon={station.available ? chargingStationIcon : unavailableIcon}
+                eventHandlers={{
+                  click: () => handleStationClick(station),
+                  mouseover: (e) => {
+                    e.target.openPopup();
+                  },
+                  mouseout: (e) => {
+                    e.target.closePopup();
+                  }
+                }}
+              >
+                <Popup closeButton={false} autoClose={false} closeOnClick={false}>
+                  <Box sx={{ minWidth: 200 }}>
+                    <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold' }}>
+                      {station.name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <LocationOn fontSize="small" />
+                      {station.location}
+                    </Typography>
+                    {station.distance && (
+                      <Typography variant="body2" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
+                        📍 {station.distance.toFixed(1)} km de distância
+                      </Typography>
+                    )}
+                    <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+                      <Chip
+                        label={`${station.power}kW`}
+                        size="small"
+                        icon={<Power />}
+                        color="primary"
+                      />
+                      <Chip
+                        label={getChargingTypeLabel(station.chargingType)}
+                        size="small"
+                        sx={{ 
+                          backgroundColor: getChargingTypeColor(station.chargingType),
+                          color: 'white'
+                        }}
+                      />
+                      <Chip
+                        label={station.available ? 'Disponível' : 'Indisponível'}
+                        size="small"
+                        color={station.available ? 'success' : 'error'}
+                      />
+                    </Box>
+                    {station.totalPorts && (
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        Portas: {station.availablePorts}/{station.totalPorts} disponíveis
+                      </Typography>
+                    )}
+                  </Box>
+                </Popup>
+              </Marker>
+            );
+          })}
+        </MapContainer>
+      </Box>
+
+      {/* Right Side - Stations List */}
+      <Box sx={{ 
+        width: '400px', 
+        height: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        borderLeft: '1px solid',
+        borderColor: 'divider',
+        backgroundColor: 'background.default'
+      }}>
+        {/* Header with Search */}
+        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+            Estações de Carregamento
+          </Typography>
+          <TextField
+            fullWidth
+            placeholder="Pesquisar estações..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+            size="small"
+          />
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {filteredAndSortedStations.length} estações encontradas
+          </Typography>
+        </Box>
+
+        {/* Stations List */}
+        <Box sx={{ 
+          flex: 1, 
+          overflow: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#f1f1f1',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#c1c1c1',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: '#a8a8a8',
+          },
+        }}>
+          {filteredAndSortedStations.map((station, index) => (
+            <Card 
               key={station.id}
-              position={[station.latitude, station.longitude]}
-              icon={station.available ? chargingStationIcon : unavailableIcon}
-              eventHandlers={{
-                click: () => handleStationClick(station),
-                mouseover: (e) => {
-                  e.target.openPopup();
-                },
-                mouseout: (e) => {
-                  e.target.closePopup();
+              sx={{ 
+                m: 2, 
+                cursor: 'pointer',
+                border: hoveredStation?.id === station.id ? 2 : 1,
+                borderColor: hoveredStation?.id === station.id ? 'primary.main' : 'divider',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  boxShadow: 3,
+                  transform: 'translateY(-2px)'
                 }
               }}
+              onClick={() => handleStationCardClick(station)}
+              onMouseEnter={() => handleStationCardHover(station)}
+              onMouseLeave={() => setHoveredStation(null)}
             >
-              <Popup closeButton={false} autoClose={false} closeOnClick={false}>
-                <Box sx={{ minWidth: 200 }}>
-                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold' }}>
+              <CardContent sx={{ pb: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
                     {station.name}
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <LocationOn fontSize="small" />
-                    {station.location}
-                  </Typography>
-                  {distance && (
-                    <Typography variant="body2" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
-                      📍 {distance.toFixed(1)} km de distância
-                    </Typography>
-                  )}
-                  <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
-                    <Chip
-                      label={`${station.power}kW`}
-                      size="small"
-                      icon={<Power />}
-                      color="primary"
-                    />
-                    <Chip
-                      label={getChargingTypeLabel(station.chargingType)}
-                      size="small"
-                      sx={{ 
-                        backgroundColor: getChargingTypeColor(station.chargingType),
-                        color: 'white'
-                      }}
-                    />
-                    <Chip
-                      label={station.available ? 'Disponível' : 'Indisponível'}
-                      size="small"
-                      color={station.available ? 'success' : 'error'}
-                    />
-                  </Box>
-                  {station.totalPorts && (
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      Portas: {station.availablePorts}/{station.totalPorts} disponíveis
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                    Clique na estação para ver mais detalhes
-                  </Typography>
+                  <Chip
+                    label={station.available ? 'Disponível' : 'Indisponível'}
+                    size="small"
+                    color={station.available ? 'success' : 'error'}
+                    variant="filled"
+                  />
                 </Box>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <LocationOn fontSize="small" />
+                  {station.location}
+                </Typography>
+
+                {station.distance && (
+                  <Typography variant="body2" color="primary.main" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    📍 {station.distance.toFixed(1)} km de distância
+                  </Typography>
+                )}
+
+                <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+                  <Chip
+                    label={`${station.power}kW`}
+                    size="small"
+                    icon={<Power />}
+                    variant="outlined"
+                    color="primary"
+                  />
+                  <Chip
+                    label={getChargingTypeLabel(station.chargingType)}
+                    size="small"
+                    sx={{ 
+                      backgroundColor: getChargingTypeColor(station.chargingType),
+                      color: 'white'
+                    }}
+                  />
+                </Box>
+
+                {station.totalPorts && (
+                  <Typography variant="body2" color="text.secondary">
+                    Portas: {station.availablePorts}/{station.totalPorts} disponíveis
+                  </Typography>
+                )}
+              </CardContent>
+              
+              <CardActions sx={{ pt: 0, justifyContent: 'space-between' }}>
+                <Button 
+                  size="small" 
+                  startIcon={<ElectricCar />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedStation(station);
+                    setBookingModalOpen(true);
+                  }}
+                >
+                  Reservar
+                </Button>
+                <Button 
+                  size="small" 
+                  startIcon={<LocationOn />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const url = `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`;
+                    window.open(url, '_blank');
+                  }}
+                >
+                  Navegar
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
+        </Box>
+      </Box>
 
       {/* Station Details Dialog */}
       <Dialog 
@@ -429,14 +596,9 @@ function Map() {
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     Coordenadas: {selectedStation.latitude}, {selectedStation.longitude}
                   </Typography>
-                  {userLocation && (
+                  {userLocation && selectedStation.distance && (
                     <Typography variant="body2" color="primary.main" sx={{ mt: 1, fontWeight: 'bold' }}>
-                      📍 {calculateDistance(
-                        userLocation.lat, 
-                        userLocation.lng, 
-                        selectedStation.latitude, 
-                        selectedStation.longitude
-                      ).toFixed(1)} km de distância
+                      📍 {selectedStation.distance.toFixed(1)} km de distância
                     </Typography>
                   )}
                 </Paper>
