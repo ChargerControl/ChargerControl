@@ -50,6 +50,28 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=UserAPI -Dsonar.projectName='UserAPI' -Dsonar.token=${SONAR_TOKEN} -Dsonar.host.url=${SONAR_HOST_URL}
 
+      - name: Authenticate with Xray Cloud (UserAPI)
+        id: xray-auth-userapi
+        working-directory: UserApp/Backend/UserApi
+        run: |
+          TOKEN=(curl -s -H "Content-Type: application/json" \
+            -X POST \
+            --data '{"client_id":"${{ secrets.XRAY_CLIENT_ID }}","client_secret":"${{ secrets.XRAY_CLIENT_SECRET }}"}' \
+            "https://xray.cloud.getxray.app/api/v1/authenticate" | tr -d '"')
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Import JUnit results to Xray Cloud (UserAPI)
+        working-directory: UserApp/Backend/UserApi
+        run: |
+          for file in target/surefire-reports/TEST-*.xml
+          set -l token ${{ steps.xray-auth-userapi.outputs.token }}
+          for file in target/surefire-reports/TEST-*.xml
+            curl -H "Content-Type: text/xml" \
+              -H "Authorization: Bearer $token" \
+              --data-binary @$file \
+              "https://xray.cloud.getxray.app/api/v1/import/execution/junit?projectKey=SCRUM"
+          end
+
       - name: Build and analyze OperatorAPI
         working-directory: OperatorApp/Backend/OperatorApi
         env:
@@ -57,4 +79,24 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=OperatorAPI -Dsonar.projectName='OperatorAPI' -Dsonar.token=${SONAR_TOKEN} -Dsonar.host.url=${SONAR_HOST_URL}
 
+      - name: Authenticate with Xray Cloud (OperatorAPI)
+        id: xray-auth-operatorapi
+        working-directory: OperatorApp/Backend/OperatorApi
+        run: |
+          TOKEN=(curl -s -H "Content-Type: application/json" \
+            -X POST \
+            --data '{"client_id":"${{ secrets.XRAY_CLIENT_ID }}","client_secret":"${{ secrets.XRAY_CLIENT_SECRET }}"}' \
+            "https://xray.cloud.getxray.app/api/v1/authenticate" | tr -d '"')
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Import JUnit results to Xray Cloud (OperatorAPI)
+        working-directory: OperatorApp/Backend/OperatorApi
+        run: |
+          set -l token ${{ steps.xray-auth-operatorapi.outputs.token }}
+          for file in target/surefire-reports/TEST-*.xml
+            curl -H "Content-Type: text/xml" \
+              -H "Authorization: Bearer $token" \
+              --data-binary @$file \
+              "https://xray.cloud.getxray.app/api/v1/import/execution/junit?projectKey=SCRUM"
+          end
 
