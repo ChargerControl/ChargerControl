@@ -32,7 +32,136 @@ import {
   LocationOn as LocationIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material';
+import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import Cars from './Cars';
+
+// Tema harmonizado com navbar e home
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#76ff03',
+      light: '#b2ff59',
+      dark: '#64dd17',
+    },
+    secondary: {
+      main: '#1a1a1a',
+      light: '#333333',
+      dark: '#000000',
+    },
+    background: {
+      default: '#0a0a0a',
+      paper: 'rgba(26, 26, 26, 0.9)',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+    },
+  },
+});
+
+// Componentes estilizados
+const NeonCard = styled(Card)(({ theme }) => ({
+  background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(51, 51, 51, 0.8) 100%)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(118, 255, 3, 0.2)',
+  borderRadius: '16px',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(118, 255, 3, 0.1)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    borderColor: 'rgba(118, 255, 3, 0.4)',
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(118, 255, 3, 0.2)',
+  },
+}));
+
+const NeonButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(45deg, #76ff03 30%, #64dd17 90%)',
+  color: '#000000',
+  borderRadius: '12px',
+  fontWeight: 600,
+  textTransform: 'none',
+  boxShadow: '0 4px 15px rgba(118, 255, 3, 0.4)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #64dd17 30%, #76ff03 90%)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 6px 20px rgba(118, 255, 3, 0.6)',
+  },
+}));
+
+const OutlineButton = styled(Button)(({ theme }) => ({
+  borderColor: '#76ff03',
+  color: '#76ff03',
+  borderRadius: '12px',
+  fontWeight: 600,
+  textTransform: 'none',
+  borderWidth: '2px',
+  background: 'rgba(26, 26, 26, 0.8)',
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    backgroundColor: 'rgba(118, 255, 3, 0.1)',
+    borderColor: '#76ff03',
+    borderWidth: '2px',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 15px rgba(118, 255, 3, 0.3)',
+  },
+}));
+
+const NeonTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    '& fieldset': {
+      borderColor: 'rgba(118, 255, 3, 0.3)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(118, 255, 3, 0.5)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#76ff03',
+      boxShadow: '0 0 10px rgba(118, 255, 3, 0.3)',
+    },
+  },
+  '& .MuiInputBase-input': {
+    color: '#ffffff',
+  },
+  '& .MuiInputLabel-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+}));
+
+const GlowAvatar = styled(Avatar)(({ theme }) => ({
+  border: '3px solid #76ff03',
+  boxShadow: '0 0 20px rgba(118, 255, 3, 0.5), 0 8px 32px rgba(0, 0, 0, 0.3)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 0 30px rgba(118, 255, 3, 0.7), 0 12px 40px rgba(0, 0, 0, 0.4)',
+  },
+}));
+
+const NeonTabs = styled(Tabs)(({ theme }) => ({
+  '& .MuiTab-root': {
+    textTransform: 'none',
+    fontWeight: 600,
+    fontSize: '1rem',
+    color: 'rgba(255, 255, 255, 0.7)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      color: '#76ff03',
+    },
+  },
+  '& .Mui-selected': {
+    color: '#76ff03 !important',
+  },
+  '& .MuiTabs-indicator': {
+    backgroundColor: '#76ff03',
+    height: '3px',
+    borderRadius: '2px',
+    boxShadow: '0 0 10px rgba(118, 255, 3, 0.5)',
+  },
+}));
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -55,7 +184,6 @@ function TabPanel(props) {
 }
 
 function UserProfile() {
-  const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -127,332 +255,308 @@ function UserProfile() {
   const profileImage = require("../../Images/zezinho.png");
 
   return (
-    <Box
-  sx={{
-    minHeight: '100vh',
-    background: '#1e3c72', // dark blue solid
-    pb: 4
-  }}
->
-  {/* Header Background */}
-  <Box
-    sx={{
-      height: '200px',
-      width: '100%',
-      position: 'relative',
-      background: 'rgba(30, 60, 114, 0.9)', // dark blue with transparency
-    }}
-  />
-
-      <Container maxWidth="lg" sx={{ mt: -12, position: 'relative', zIndex: 2 }}>
-        {/* Profile Header Card */}
-        <Card
-          elevation={0}
+    <ThemeProvider theme={darkTheme}>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #2a2a2a 70%, #1a1a1a 100%)',
+          pb: 4,
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(ellipse at center, rgba(118, 255, 3, 0.05) 0%, transparent 70%)',
+            zIndex: 1,
+          },
+        }}
+      >
+        {/* Header Background */}
+        <Box
           sx={{
-            borderRadius: 4,
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            mb: 3,
-            overflow: 'visible'
+            height: '200px',
+            width: '100%',
+            position: 'relative',
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 26, 0.8) 100%)',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background: 'linear-gradient(90deg, transparent, #76ff03, transparent)',
+            },
           }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Grid container spacing={3} alignItems="center">
-              <Grid item xs={12} sm="auto" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-                <Badge
-                  overlap="circular"
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  badgeContent={
-                    <IconButton
-                      size="small"
+        />
+
+        <Container maxWidth="lg" sx={{ mt: -12, position: 'relative', zIndex: 2 }}>
+          {/* Profile Header Card */}
+          <NeonCard sx={{ mb: 3, overflow: 'visible' }}>
+            <CardContent sx={{ p: 4 }}>
+              <Grid container spacing={3} alignItems="center">
+                <Grid item xs={12} sm="auto" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    badgeContent={
+                      <IconButton
+                        size="small"
+                        sx={{ 
+                          bgcolor: '#76ff03', 
+                          color: '#000000',
+                          boxShadow: '0 0 15px rgba(118, 255, 3, 0.5)',
+                          '&:hover': { 
+                            bgcolor: '#64dd17',
+                            transform: 'scale(1.1)',
+                          }
+                        }}
+                      >
+                        <PhotoCameraIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  >
+                    <GlowAvatar
+                      src={profileImage}
+                      alt={userData.name}
                       sx={{ 
-                        bgcolor: 'primary.main', 
+                        width: 120,
+                        height: 120,
+                      }}
+                    />
+                  </Badge>
+                </Grid>
+                
+                <Grid item xs={12} sm>
+                  <Box sx={{ pl: { sm: 3 }, textAlign: { xs: 'center', sm: 'left' } }}>
+                    <Typography 
+                      variant="h4" 
+                      component="h1" 
+                      fontWeight="700" 
+                      gutterBottom
+                      sx={{ 
                         color: 'white',
-                        '&:hover': { bgcolor: 'primary.dark' }
+                        textShadow: '0 0 10px rgba(118, 255, 3, 0.3)'
                       }}
                     >
-                      <PhotoCameraIcon fontSize="small" />
-                    </IconButton>
-                  }
+                      {userData.name}
+                    </Typography>
+                  </Box>
+                </Grid>
+              
+              </Grid>
+            </CardContent>
+          </NeonCard>
+
+          {/* Main Content */}
+          <NeonCard>
+            <CardContent sx={{ p: 0 }}>
+              {/* Tabs */}
+              <Box sx={{ px: 4, pt: 3 }}>
+                <NeonTabs 
+                  value={tabValue} 
+                  onChange={handleTabChange} 
+                  variant="scrollable"
+                  scrollButtons="auto"
                 >
-                  <Avatar
-                    src={profileImage}
-                    alt={userData.name}
-                    sx={{ 
+                  <Tab label="Personal Information" />
+                  <Tab label="Charger Information" />
+                  <Tab label="My Vehicles" />
+                </NeonTabs>
+                <Divider sx={{ mt: 2, backgroundColor: 'rgba(118, 255, 3, 0.2)' }} />
+              </Box>
+
+              {/* Personal Information Tab */}
+              <TabPanel value={tabValue} index={0}>
+                <Box sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Typography 
+                      variant="h5" 
+                      fontWeight="600"
+                      sx={{ color: 'white' }}
+                    >
+                      Personal Information
+                    </Typography>
+                    {editMode ? (
+                      <OutlineButton
+                        startIcon={<CloseIcon />}
+                        onClick={handleEditToggle}
+                      >
+                        Cancel
+                      </OutlineButton>
+                    ) : (
+                      <NeonButton
+                        startIcon={<EditIcon />}
+                        onClick={handleEditToggle}
+                      >
+                        Edit Profile
+                      </NeonButton>
+                    )}
+                  </Box>
+
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Card 
+                        variant="outlined" 
+                        sx={{ 
+                          p: 3, 
+                          borderRadius: 2,
+                          backgroundColor: 'rgba(51, 51, 51, 0.3)',
+                          border: '1px solid rgba(118, 255, 3, 0.2)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            borderColor: 'rgba(118, 255, 3, 0.4)',
+                            backgroundColor: 'rgba(51, 51, 51, 0.4)',
+                          }
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <PersonIcon sx={{ mr: 2, color: '#76ff03' }} />
+                          <Typography variant="subtitle2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            Full Name
+                          </Typography>
+                        </Box>
+                        {editMode ? (
+                          <NeonTextField
+                            name="name"
+                            value={editData.name}
+                            onChange={handleInputChange}
+                            fullWidth
+                            variant="outlined"
+                          />
+                        ) : (
+                          <Typography variant="h6" fontWeight="500" sx={{ color: 'white' }}>
+                            {userData.name}
+                          </Typography>
+                        )}
+                      </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Card 
+                        variant="outlined" 
+                        sx={{ 
+                          p: 3, 
+                          borderRadius: 2,
+                          backgroundColor: 'rgba(51, 51, 51, 0.3)',
+                          border: '1px solid rgba(118, 255, 3, 0.2)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            borderColor: 'rgba(118, 255, 3, 0.4)',
+                            backgroundColor: 'rgba(51, 51, 51, 0.4)',
+                          }
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <EmailIcon sx={{ mr: 2, color: '#76ff03' }} />
+                          <Typography variant="subtitle2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            Email
+                          </Typography>
+                        </Box>
+                        <Typography variant="h6" fontWeight="500" sx={{ color: 'white' }}>
+                          {userData.email}
+                        </Typography>
+                      </Card>
+                    </Grid>
+
+                    
+                  </Grid>
+
+                  {editMode && (
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                      <OutlineButton onClick={handleEditToggle}>
+                        Cancel
+                      </OutlineButton>
+                      <NeonButton
+                        startIcon={<SaveIcon />}
+                        onClick={handleSaveProfile}
+                      >
+                        Save Changes
+                      </NeonButton>
+                    </Box>
+                  )}
+                </Box>
+              </TabPanel>
+
+              {/* Charger Information Tab */}
+              <TabPanel value={tabValue} index={1}>
+                <Box sx={{ p: 4, textAlign: 'center', py: 8 }}>
+                  <Box
+                    sx={{
                       width: 120,
                       height: 120,
-                      border: '4px solid white',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-                    }}
-                  />
-                </Badge>
-              </Grid>
-              
-              <Grid item xs={12} sm>
-                <Box sx={{ pl: { sm: 3 }, textAlign: { xs: 'center', sm: 'left' } }}>
-                  <Typography 
-                    variant="h4" 
-                    component="h1" 
-                    fontWeight="700" 
-                    gutterBottom
-                    sx={{ color: 'text.primary' }}
-                  >
-                    {userData.name}
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    {userData.email}
-                  </Typography>
-                </Box>
-              </Grid>
-              
-              <Grid item xs={12} sm="auto">
-                <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'center', sm: 'flex-end' } }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<LogoutIcon />}
-                    onClick={handleLogout}
-                    sx={{ 
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 600
+                      borderRadius: '50%',
+                      background: 'linear-gradient(45deg, rgba(118, 255, 3, 0.2), rgba(118, 255, 3, 0.1))',
+                      border: '2px solid rgba(118, 255, 3, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 3,
+                      boxShadow: '0 0 30px rgba(118, 255, 3, 0.2)',
                     }}
                   >
-                    Logout
-                  </Button>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        {/* Main Content */}
-        <Card
-          elevation={0}
-          sx={{
-            borderRadius: 4,
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-          }}
-        >
-          <CardContent sx={{ p: 0 }}>
-            {/* Tabs */}
-            <Box sx={{ px: 4, pt: 3 }}>
-              <Tabs 
-                value={tabValue} 
-                onChange={handleTabChange} 
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  '& .MuiTab-root': {
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    minHeight: 48,
-                    px: 3
-                  },
-                  '& .Mui-selected': {
-                    color: 'primary.main'
-                  }
-                }}
-              >
-                <Tab label="Personal Information" />
-                <Tab label="Charger Information" />
-                <Tab label="My Vehicles" />
-              </Tabs>
-              <Divider sx={{ mt: 2 }} />
-            </Box>
-
-            {/* Personal Information Tab */}
-            <TabPanel value={tabValue} index={0}>
-              <Box sx={{ p: 4 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                  <Typography variant="h5" fontWeight="600">
-                    Personal Information
-                  </Typography>
-                  <Button
-                    variant={editMode ? "outlined" : "contained"}
-                    startIcon={editMode ? <CloseIcon /> : <EditIcon />}
-                    onClick={handleEditToggle}
-                    sx={{ 
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      px: 3
-                    }}
-                  >
-                    {editMode ? 'Cancel' : 'Edit Profile'}
-                  </Button>
-                </Box>
-
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <PersonIcon sx={{ mr: 2, color: 'primary.main' }} />
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Full Name
-                        </Typography>
-                      </Box>
-                      {editMode ? (
-                        <TextField
-                          name="name"
-                          value={editData.name}
-                          onChange={handleInputChange}
-                          fullWidth
-                          variant="outlined"
-                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                        />
-                      ) : (
-                        <Typography variant="h6" fontWeight="500">
-                          {userData.name}
-                        </Typography>
-                      )}
-                    </Card>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <EmailIcon sx={{ mr: 2, color: 'primary.main' }} />
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Email
-                        </Typography>
-                      </Box>
-                      <Typography variant="h6" fontWeight="500">
-                        {userData.email}
-                      </Typography>
-                    </Card>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <PhoneIcon sx={{ mr: 2, color: 'primary.main' }} />
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Phone
-                        </Typography>
-                      </Box>
-                      {editMode ? (
-                        <TextField
-                          name="phone"
-                          value={editData.phone}
-                          onChange={handleInputChange}
-                          fullWidth
-                          variant="outlined"
-                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                        />
-                      ) : (
-                        <Typography variant="h6" fontWeight="500">
-                          {userData.phone}
-                        </Typography>
-                      )}
-                    </Card>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <LocationIcon sx={{ mr: 2, color: 'primary.main' }} />
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Location
-                        </Typography>
-                      </Box>
-                      {editMode ? (
-                        <TextField
-                          name="location"
-                          value={editData.location}
-                          onChange={handleInputChange}
-                          fullWidth
-                          variant="outlined"
-                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                        />
-                      ) : (
-                        <Typography variant="h6" fontWeight="500">
-                          {userData.location}
-                        </Typography>
-                      )}
-                    </Card>
-                  </Grid>
-                </Grid>
-
-                {editMode && (
-                  <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                    <Button
-                      variant="outlined"
-                      onClick={handleEditToggle}
-                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      startIcon={<SaveIcon />}
-                      onClick={handleSaveProfile}
-                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                    >
-                      Save Changes
-                    </Button>
+                    <SettingsIcon sx={{ fontSize: 48, color: '#76ff03' }} />
                   </Box>
-                )}
-              </Box>
-            </TabPanel>
-
-            {/* Charger Information Tab */}
-            <TabPanel value={tabValue} index={1}>
-              <Box sx={{ p: 4, textAlign: 'center', py: 8 }}>
-                <Box
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    borderRadius: '50%',
-                    bgcolor: 'primary.light',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 3
-                  }}
-                >
-                  <SettingsIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+                  <Typography 
+                    variant="h5" 
+                    fontWeight="600" 
+                    gutterBottom
+                    sx={{ color: 'white' }}
+                  >
+                    Charger Information
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      maxWidth: 400, 
+                      mx: 'auto',
+                      color: 'rgba(255, 255, 255, 0.7)'
+                    }}
+                  >
+                    This section will contain information about your registered chargers.
+                  </Typography>
                 </Box>
-                <Typography variant="h5" fontWeight="600" gutterBottom>
-                  Charger Information
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400, mx: 'auto' }}>
-                  This section will contain information about your registered chargers.
-                </Typography>
-              </Box>
-            </TabPanel>
+              </TabPanel>
 
-            {/* Cars Tab */}
-            <TabPanel value={tabValue} index={2}>
-              <Box sx={{ p: 4 }}>
-                <Cars />
-              </Box>
-            </TabPanel>
-          </CardContent>
-        </Card>
-      </Container>
+              {/* Cars Tab */}
+              <TabPanel value={tabValue} index={2}>
+                <Box sx={{ p: 4 }}>
+                  <Cars />
+                </Box>
+              </TabPanel>
+            </CardContent>
+          </NeonCard>
+        </Container>
 
-      {/* Success Message */}
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={3000}
-        onClose={() => setSuccessMessage(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSuccessMessage(null)} 
-          severity="success" 
-          variant="filled"
-          sx={{ borderRadius: 2 }}
+        {/* Success Message */}
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={3000}
+          onClose={() => setSuccessMessage(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {successMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert 
+            onClose={() => setSuccessMessage(null)} 
+            severity="success" 
+            variant="filled"
+            sx={{ 
+              borderRadius: 2,
+              backgroundColor: '#76ff03',
+              color: '#000000',
+              '& .MuiAlert-icon': {
+                color: '#000000',
+              }
+            }}
+          >
+            {successMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </ThemeProvider>
   );
 }
 
