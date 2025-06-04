@@ -31,4 +31,9 @@ public class CarDTO {
     @Size(min = 1, max = 50, message = "Car class must be between 1 and 50 characters")
     @Pattern(regexp = "^[A-Z0-9]+$", message = "Car class must contain only uppercase letters and numbers")
     private String carClass;
+
+    @Size(max = 500, message = "Image URL must not exceed 500 characters")
+    @Pattern(regexp = "^(https?://)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([/\\w \\.-]*)*/?$", 
+             message = "Please provide a valid URL")
+    private String imageUrl;
 }

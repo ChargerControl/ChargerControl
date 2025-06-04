@@ -39,12 +39,16 @@ public class Car {
     @Pattern(regexp = "^[A-Z0-9]+$", message = "Car class must contain only uppercase letters and numbers")
     private String carClass;
 
+    @Column(name = "image_url", length = 500)
+    @Size(max = 500, message = "Image URL must not exceed 500 characters")
+    @Pattern(regexp = "^(https?://)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([/\\w \\.-]*)*/?$", 
+             message = "Please provide a valid URL")
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User owner;
 
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<BookSlot> bookSlots;
-
-
 }

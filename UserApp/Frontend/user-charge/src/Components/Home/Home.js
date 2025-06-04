@@ -14,21 +14,21 @@ import {
 import { ElectricCar, Login, Map } from '@mui/icons-material';
 import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 
-// Tema personalizado
+// Tema personalizado harmonizado com a navbar
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#0d47a1',
+      main: '#76ff03',
+      light: '#b2ff59',
+      dark: '#64dd17',
     },
     secondary: {
-      main: '#4caf50',
-      light: '#81c784',
-      dark: '#2e7d32',
+      main: '#1a1a1a',
+      light: '#333333',
+      dark: '#000000',
     },
     background: {
-      default: '#f5f5f5',
+      default: '#0a0a0a',
     },
   },
   typography: {
@@ -45,7 +45,7 @@ const theme = createTheme({
 // Componentes estilizados
 const HeroSection = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.secondary.main} 100%)`,
+  background: `linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #2a2a2a 70%, #1a1a1a 100%)`,
   display: 'flex',
   alignItems: 'flex-start',
   position: 'relative',
@@ -54,21 +54,54 @@ const HeroSection = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     paddingTop: theme.spacing(15),
   },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(ellipse at center, rgba(118, 255, 3, 0.1) 0%, transparent 70%)',
+    zIndex: 1,
+  },
 }));
 
-const GradientButton = styled(Button)(({ theme }) => ({
-  background: `linear-gradient(45deg, ${theme.palette.secondary.main} 30%, ${theme.palette.secondary.light} 90%)`,
+const NeonButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(45deg, #76ff03 30%, #64dd17 90%)',
+  color: '#000000',
   borderRadius: 25,
   padding: '14px 32px',
   fontSize: '1.1rem',
   fontWeight: 700,
   textTransform: 'none',
   transition: 'all 0.3s ease',
-  boxShadow: '0 8px 20px rgba(76, 175, 80, 0.3)',
+  boxShadow: '0 8px 25px rgba(118, 255, 3, 0.4)',
+  border: 'none',
   '&:hover': {
-    background: `linear-gradient(45deg, ${theme.palette.secondary.dark} 30%, ${theme.palette.secondary.main} 90%)`,
+    background: 'linear-gradient(45deg, #64dd17 30%, #76ff03 90%)',
     transform: 'translateY(-3px)',
-    boxShadow: '0 12px 25px rgba(76, 175, 80, 0.4)',
+    boxShadow: '0 12px 35px rgba(118, 255, 3, 0.6)',
+  },
+}));
+
+const OutlineButton = styled(Button)(({ theme }) => ({
+  borderColor: '#76ff03',
+  color: '#76ff03',
+  borderRadius: 25,
+  padding: '14px 32px',  
+  fontSize: '1.1rem',
+  fontWeight: 600,
+  textTransform: 'none',
+  borderWidth: 2,
+  transition: 'all 0.3s ease',
+  background: 'rgba(26, 26, 26, 0.8)',
+  backdropFilter: 'blur(10px)',
+  '&:hover': {
+    backgroundColor: 'rgba(118, 255, 3, 0.1)',
+    borderColor: '#76ff03',
+    borderWidth: 2,
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 20px rgba(118, 255, 3, 0.3)',
   },
 }));
 
@@ -118,17 +151,18 @@ function Home() {
                   <Fade in={checked} timeout={1000}>
                     <Box sx={{ maxWidth: { xs: '100%', md: '700px' } }}>
                       <Chip
-                        label="🚗 The Future of Mobility"
+                        label="⚡ The Future of Mobility"
                         sx={{
                           mb: 3,
-                          backgroundColor: 'rgba(255,255,255,0.15)',
-                          color: 'white',
+                          backgroundColor: 'rgba(118, 255, 3, 0.15)',
+                          color: '#76ff03',
                           fontSize: '1.3rem',
                           px: 4,
                           py: 1.5,
                           borderRadius: 50,
                           backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255,255,255,0.2)',
+                          border: '1px solid rgba(118, 255, 3, 0.3)',
+                          boxShadow: '0 4px 15px rgba(118, 255, 3, 0.2)',
                         }}
                       />
                       <Typography
@@ -136,7 +170,7 @@ function Home() {
                         sx={{
                           color: 'white',
                           mb: 3,
-                          textShadow: '2px 2px 8px rgba(0,0,0,0.3)',
+                          textShadow: '2px 2px 8px rgba(0,0,0,0.5)',
                           fontSize: { xs: '3rem', md: '4.5rem' },
                           fontWeight: 800,
                           lineHeight: 1.1,
@@ -146,13 +180,14 @@ function Home() {
                         <Box
                           component="span"
                           sx={{
-                            background: 'linear-gradient(45deg, #4caf50, #81c784)',
+                            background: 'linear-gradient(45deg, #76ff03, #b2ff59)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                             color: 'transparent',
                             display: 'block',
                             mt: 1,
+                            filter: 'drop-shadow(0 0 15px rgba(118, 255, 3, 0.8))',
                           }}
                         >
                           Electric Future
@@ -182,7 +217,7 @@ function Home() {
                           flexWrap: 'wrap',
                         }}
                       >
-                        <GradientButton
+                        <NeonButton
                           size="large"
                           startIcon={<Map />}
                           onClick={handleMapClick}
@@ -193,32 +228,20 @@ function Home() {
                           }}
                         >
                           Explore Map
-                        </GradientButton>
-                        <Button
+                        </NeonButton>
+                        <OutlineButton
                           variant="outlined"
                           size="large"
                           startIcon={<Login />}
                           onClick={handleLoginClick}
                           sx={{
-                            borderColor: 'rgba(255,255,255,0.8)',
-                            color: 'white',
-                            borderRadius: 25,
-                            px: 5,
-                            py: 2.5,
                             minWidth: '170px',
-                            borderWidth: 2,
-                            fontWeight: 600,
+                            py: 2.5,
                             fontSize: '1.2rem',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255,255,255,0.1)',
-                              borderColor: 'white',
-                              borderWidth: 2,
-                              transform: 'translateY(-2px)',
-                            },
                           }}
                         >
                           Login
-                        </Button>
+                        </OutlineButton>
                       </Box>
                     </Box>
                   </Fade>
@@ -244,9 +267,20 @@ function Home() {
                             left: -25,
                             right: -25,
                             bottom: -25,
-                            background: 'radial-gradient(circle, rgba(76,175,80,0.3) 0%, transparent 70%)',
+                            background: 'radial-gradient(circle, rgba(118, 255, 3, 0.3) 0%, transparent 70%)',
                             borderRadius: '50%',
                             zIndex: -1,
+                            animation: 'pulse 2s ease-in-out infinite alternate',
+                          },
+                          '@keyframes pulse': {
+                            '0%': {
+                              transform: 'scale(1)',
+                              opacity: 0.7,
+                            },
+                            '100%': {
+                              transform: 'scale(1.1)',
+                              opacity: 0.3,
+                            },
                           },
                         }}
                       >
@@ -255,22 +289,23 @@ function Home() {
                             width: { xs: 200, sm: 250, md: 350 },
                             height: { xs: 200, sm: 250, md: 350 },
                             background:
-                              'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
+                              'linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(51, 51, 51, 0.7) 100%)',
                             backdropFilter: 'blur(20px)',
-                            border: '2px solid rgba(255,255,255,0.2)',
-                            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                            border: '2px solid rgba(118, 255, 3, 0.4)',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 30px rgba(118, 255, 3, 0.2)',
                             transition: 'all 0.3s ease',
                             '&:hover': {
                               transform: 'scale(1.05) rotate(5deg)',
-                              boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
+                              boxShadow: '0 25px 50px rgba(0,0,0,0.4), 0 0 40px rgba(118, 255, 3, 0.4)',
+                              border: '2px solid rgba(118, 255, 3, 0.6)',
                             },
                           }}
                         >
                           <ElectricCar
                             sx={{
                               fontSize: { xs: 120, sm: 150, md: 170 },
-                              color: 'white',
-                              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
+                              color: '#76ff03',
+                              filter: 'drop-shadow(0 4px 15px rgba(118, 255, 3, 0.5))',
                             }}
                           />
                         </Avatar>
