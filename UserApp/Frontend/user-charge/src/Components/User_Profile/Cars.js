@@ -33,8 +33,7 @@ import {
   CalendarToday as CalendarIcon,
   BugReport as BugReportIcon,
   ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-  Image as ImageIcon
+  ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
 
 function Cars() {
@@ -45,19 +44,17 @@ function Cars() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
   const [showDebug, setShowDebug] = useState(false);
-  const [apiConfig, setApiConfig] = useState(null); // API configuration cache
-  const [imagePreview, setImagePreview] = useState(''); // Image preview
+  const [apiConfig, setApiConfig] = useState(null);
 
   // Vehicle data from API
   const [vehicles, setVehicles] = useState([]);
   
-  // New car state - ADDED imageUrl
+  // New car state
   const [newCar, setNewCar] = useState({
     model: '',
     brand: '',
     maximumCharge: '',
-    carClass: '',
-    imageUrl: ''
+    carClass: ''
   });
 
   // Centralized API configurations
@@ -76,44 +73,24 @@ function Cars() {
       { baseUrl: '', path: '/api/v1/cars/user' },
       { baseUrl: '', path: '/api/cars/user' }
     ],
+    carsCreate: [
+      { baseUrl: 'http://localhost:8080', path: '/apiV1/cars/user' },
+      { baseUrl: 'http://localhost:3000', path: '/apiV1/cars/user' },
+      { baseUrl: '', path: '/apiV1/cars/user' },
+      { baseUrl: '', path: '/api/v1/cars/user' },
+      { baseUrl: '', path: '/api/cars/user' }
+    ],
     carsBase: [
       { baseUrl: 'http://localhost:8080', path: '/apiV1/cars' },
       { baseUrl: 'http://localhost:3000', path: '/apiV1/cars' },
-      { baseUrl: '', path: '/apiV1/cars' }
+      { baseUrl: '', path: '/apiV1/cars' },
+      { baseUrl: '', path: '/api/v1/cars' },
+      { baseUrl: '', path: '/api/cars' }
     ]
   };
 
-  // Function to validate image URL
-  const isValidImageUrl = (url) => {
-    if (!url) return false;
-    try {
-      new URL(url);
-      return /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url);
-    } catch {
-      return false;
-    }
-  };
-
-  // Function to get default image based on brand
-  const getDefaultCarImage = (brand) => {
-    const defaultImages = {
-      'Tesla': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&h=200&fit=crop&crop=center',
-      'BMW': 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=200&fit=crop&crop=center',
-      'Mercedes': 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=400&h=200&fit=crop&crop=center',
-      'Audi': 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=200&fit=crop&crop=center',
-      'Volkswagen': 'https://images.unsplash.com/photo-1493238792000-8113da705763?w=400&h=200&fit=crop&crop=center',
-      'Renault': 'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=400&h=200&fit=crop&crop=center'
-    };
-    return defaultImages[brand] || 'https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=400&h=200&fit=crop&crop=center';
-  };
-
-  // Function to get car image
-  const getCarImage = (vehicle) => {
-    if (vehicle.imageUrl && isValidImageUrl(vehicle.imageUrl)) {
-      return vehicle.imageUrl;
-    }
-    return getDefaultCarImage(vehicle.brand);
-  };
+  // Default car image for all vehicles
+  const DEFAULT_CAR_IMAGE = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgaNYdtgtr9vFBJx5cJasA1xFzgI7fhrSw_waHyKtQV2JOOVo6LW9x6Px2O-T7QMDv1EdnPeuu78obgWnhoiEFapmPURKvXAnp_NXClYZbwwiFmG8DJDGEBTCX5K3okFQtMUvHHxwzjjsaD/s640/Ibiza2.jpg';
 
   // Function to decode JWT token
   const decodeJWT = (token) => {
@@ -162,7 +139,14 @@ function Cars() {
           requestOptions.body = JSON.stringify(body);
         }
         
+        console.log(`Trying ${method} request to:`, url);
+        if (body) {
+          console.log('Request body:', JSON.stringify(body, null, 2));
+        }
+        
         const response = await fetch(url, requestOptions);
+        
+        console.log('Response status:', response.status);
 
         if (response.ok) {
           const contentType = response.headers.get('content-type');
@@ -170,8 +154,12 @@ function Cars() {
             const data = await response.json();
             return { data, config, url };
           } else if (method === 'DELETE') {
-            return { data: null, config, url }; // DELETE may not return JSON
+            return { data: null, config, url };
           }
+        } else {
+          // Log error details
+          const errorText = await response.text();
+          console.error(`HTTP ${response.status}: ${errorText}`);
         }
       } catch (error) {
         console.log(`Error testing ${config.baseUrl}${config.path}:`, error.message);
@@ -181,10 +169,10 @@ function Cars() {
     throw new Error('No valid URL found for the API');
   };
 
-  // Optimized function to get user ID (runs only once)
+  // Function to get user ID
   const getCurrentUserId = async () => {
     if (currentUserId) {
-      return currentUserId; // Return cached ID if it already exists
+      return currentUserId;
     }
 
     try {
@@ -201,10 +189,8 @@ function Cars() {
         throw new Error('Email not found in token');
       }
 
-      // Make only one successful request
       const { data: users, config } = await makeAPIRequest(API_CONFIGS.users);
       
-      // Save the working configuration
       setApiConfig(prev => ({ ...prev, users: config }));
       
       const currentUser = users.find(user => 
@@ -218,7 +204,7 @@ function Cars() {
       }
 
       console.log('User ID found:', currentUser.id);
-      setCurrentUserId(currentUser.id); // Cache the ID
+      setCurrentUserId(currentUser.id);
       return currentUser.id;
       
     } catch (error) {
@@ -227,7 +213,7 @@ function Cars() {
     }
   };
 
-  // Optimized function to fetch cars
+  // Function to fetch cars
   const fetchCars = async () => {
     try {
       setLoading(true);
@@ -235,14 +221,12 @@ function Cars() {
       
       const userId = await getCurrentUserId();
       
-      // Use cached configuration if available, otherwise test all
       const configsToTry = apiConfig?.cars 
         ? [apiConfig.cars] 
         : API_CONFIGS.cars;
       
       const { data: carsData, config } = await makeAPIRequest(configsToTry, userId);
       
-      // Save the working configuration
       if (!apiConfig?.cars) {
         setApiConfig(prev => ({ ...prev, cars: config }));
       }
@@ -257,49 +241,67 @@ function Cars() {
     }
   };
 
-  // Optimized function to add/edit car
+  // Function to add/edit car
   const handleAddCar = async () => {
     try {
       const userId = await getCurrentUserId();
       
       const isEdit = editCarIndex !== null;
       
+      // Prepare the car data
+      const carData = {
+        model: newCar.model,
+        brand: newCar.brand,
+        maximumCharge: parseInt(newCar.maximumCharge),
+        carClass: newCar.carClass
+      };
+      
+      console.log('Car data to send:', carData);
+      console.log('User ID:', userId);
+      
       if (isEdit) {
         // For editing, use the specific car endpoint
-        const baseConfig = apiConfig?.carsBase || API_CONFIGS.carsBase[0];
         const carId = vehicles[editCarIndex].id;
-        
-        await makeAPIRequest([baseConfig], carId, 'PUT', {
-          ...newCar,
-          ownerId: userId
-        });
+        await makeAPIRequest(API_CONFIGS.carsBase, carId, 'PUT', carData);
       } else {
-        // For creating, use the base endpoint
-        const baseConfig = apiConfig?.carsBase || API_CONFIGS.carsBase[0];
+        // For creating, use POST /apiV1/cars/user/{userId}
+        const configsToTry = apiConfig?.carsCreate 
+          ? [apiConfig.carsCreate] 
+          : API_CONFIGS.carsCreate;
         
-        await makeAPIRequest([baseConfig], null, 'POST', {
-          ...newCar,
-          ownerId: userId
-        });
+        const result = await makeAPIRequest(configsToTry, userId, 'POST', carData);
+        
+        // Save the working configuration
+        if (!apiConfig?.carsCreate) {
+          setApiConfig(prev => ({ ...prev, carsCreate: result.config }));
+        }
       }
       
       await fetchCars(); // Re-fetch data
       setAddCarDialogOpen(false);
-      setImagePreview(''); // Clear preview
+      
+      // Reset form
+      setNewCar({
+        model: '',
+        brand: '',
+        maximumCharge: '',
+        carClass: ''
+      });
+      setEditCarIndex(null);
       
     } catch (err) {
       console.error('Error saving car:', err);
-      setError(err.message);
+      setError(`Error saving car: ${err.message}`);
     }
   };
 
-  // Optimized function to delete car
+  // Function to delete car
   const handleDeleteCar = async (id) => {
     try {
       const baseConfig = apiConfig?.carsBase || API_CONFIGS.carsBase[0];
       
       await makeAPIRequest([baseConfig], id, 'DELETE');
-      await fetchCars(); // Re-fetch data
+      await fetchCars();
       
     } catch (err) {
       console.error('Error deleting car:', err);
@@ -307,7 +309,7 @@ function Cars() {
     }
   };
 
-  // Load cars when component mounts (only once)
+  // Load cars when component mounts
   useEffect(() => {
     fetchCars();
   }, []);
@@ -317,17 +319,14 @@ function Cars() {
       model: '',
       brand: '',
       maximumCharge: '',
-      carClass: '',
-      imageUrl: ''
+      carClass: ''
     });
     setEditCarIndex(null);
-    setImagePreview('');
     setAddCarDialogOpen(true);
   };
   
   const handleAddCarDialogClose = () => {
     setAddCarDialogOpen(false);
-    setImagePreview('');
   };
   
   const handleCarInputChange = (e) => {
@@ -336,11 +335,6 @@ function Cars() {
       ...newCar,
       [name]: value
     });
-
-    // Update image preview when URL changes
-    if (name === 'imageUrl') {
-      setImagePreview(value);
-    }
   };
   
   const handleEditCar = (index) => {
@@ -348,12 +342,10 @@ function Cars() {
     setNewCar({
       model: car.model,
       brand: car.brand,
-      maximumCharge: car.maximumCharge,
-      carClass: car.carClass,
-      imageUrl: car.imageUrl || ''
+      maximumCharge: car.maximumCharge.toString(),
+      carClass: car.carClass
     });
     setEditCarIndex(index);
-    setImagePreview(car.imageUrl || '');
     setAddCarDialogOpen(true);
   };
 
@@ -500,23 +492,17 @@ function Cars() {
                   }
                 }}
               >
-                {/* Car Image - MODIFIED to use getCarImage function */}
                 <CardMedia
                   component="img"
                   height="200"
-                  image={getCarImage(vehicle)}
-                  alt={`${vehicle.brand} ${vehicle.model}`}
+                  image={DEFAULT_CAR_IMAGE}
+                  alt="Electric Vehicle"
                   sx={{
                     objectFit: 'cover',
                     background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
                   }}
-                  onError={(e) => {
-                    // Fallback to default image if URL fails
-                    e.target.src = getDefaultCarImage(vehicle.brand);
-                  }}
                 />
 
-                {/* Brand Badge */}
                 <Chip
                   label={vehicle.brand}
                   size="small"
@@ -533,7 +519,6 @@ function Cars() {
                   }}
                 />
 
-                {/* Action Buttons */}
                 <Box
                   sx={{
                     position: 'absolute',
@@ -574,7 +559,6 @@ function Cars() {
                 </Box>
 
                 <CardContent sx={{ p: 3 }}>
-                  {/* Car Title */}
                   <Typography variant="h6" fontWeight="700" gutterBottom>
                     {vehicle.brand} {vehicle.model}
                   </Typography>
@@ -584,7 +568,6 @@ function Cars() {
 
                   <Divider sx={{ my: 2 }} />
 
-                  {/* Car Details */}
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -682,7 +665,7 @@ function Cars() {
         </Grid>
       )}
       
-      {/* Add/Edit Car Dialog - ADDED imageUrl field */}
+      {/* Add/Edit Car Dialog */}
       <Dialog
         open={addCarDialogOpen}
         onClose={handleAddCarDialogClose}
@@ -752,49 +735,6 @@ function Cars() {
                   <option value="SUV">SUV</option>
                 </TextField>
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Image URL"
-                  name="imageUrl"
-                  value={newCar.imageUrl}
-                  onChange={handleCarInputChange}
-                  variant="outlined"
-                  placeholder="https://example.com/car-image.jpg"
-                  helperText="Paste the link to your vehicle's image here (optional)"
-                  InputProps={{
-                    startAdornment: <ImageIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                  }}
-                />
-              </Grid>
-              
-              {/* Image Preview */}
-              {imagePreview && (
-                <Grid item xs={12}>
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Image Preview:
-                    </Typography>
-                    <Card sx={{ maxWidth: 400, mx: 'auto' }}>
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={isValidImageUrl(imagePreview) ? imagePreview : getDefaultCarImage(newCar.brand)}
-                        alt="Preview"
-                        sx={{ objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.target.src = getDefaultCarImage(newCar.brand);
-                        }}
-                      />
-                    </Card>
-                    {!isValidImageUrl(imagePreview) && imagePreview && (
-                      <Alert severity="warning" sx={{ mt: 1 }}>
-                        Invalid image URL. A default image will be used.
-                      </Alert>
-                    )}
-                  </Box>
-                </Grid>
-              )}
             </Grid>
           </Box>
         </DialogContent>
