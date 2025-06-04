@@ -31,15 +31,16 @@ function BookingModal({ open, onClose, station }) {
       { baseUrl: 'http://localhost:8080', path: '/apiV1/user/all' },
       { baseUrl: 'http://localhost:3000', path: '/apiV1/user/all' },
       { baseUrl: '', path: '/apiV1/user/all' },
-      { baseUrl: '', path: '/api/v1/user/all' },
-      { baseUrl: '', path: '/api/user/all' }
     ],
     cars: [
       { baseUrl: 'http://localhost:8080', path: '/apiV1/cars/user' },
       { baseUrl: 'http://localhost:3000', path: '/apiV1/cars/user' },
       { baseUrl: '', path: '/apiV1/cars/user' },
-      { baseUrl: '', path: '/api/v1/cars/user' },
-      { baseUrl: '', path: '/api/cars/user' }
+    ],
+    bookings: [
+      { baseUrl: 'http://localhost:8080', path: '/apiV1/bookings' },
+      { baseUrl: 'http://localhost:3000', path: '/apiV1/bookings' },
+      { baseUrl: '', path: '/apiV1/bookings' },
     ]
   };
 
@@ -200,31 +201,37 @@ function BookingModal({ open, onClose, station }) {
     setLoading(true);
     setError(null);
     try {
-      const jwtToken = getAuthToken();
+      const userId = await getCurrentUserId();
       
       // Find the selected car object
       const selectedCarObj = cars.find(car => car.id === selectedCar);
       
-      const response = await fetch('http://localhost:8080/apiV1/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-        body: JSON.stringify({
-          jwtToken,
-          stationId: station.id,
-          carId: selectedCarObj ? selectedCarObj.id : selectedCar,
-          startTime: startTime.toISOString(),
-          duration,
-        }),
-      });
+      const bookingData = {
+        userId: userId,
+        startTime: startTime.toISOString(),
+        stationId: station.id,
+        carId: selectedCarObj ? selectedCarObj.id : selectedCar,
+        duration: duration
+      };
 
-      if (!response.ok) {
-        throw new Error('Booking failed');
+      console.log('Booking data:', bookingData);
+
+      // Try different booking endpoints
+      const configsToTry = apiConfig?.bookings 
+        ? [apiConfig.bookings] 
+        : API_CONFIGS.bookings;
+
+      const { data: bookingResult, config } = await makeAPIRequest(
+        configsToTry, 
+        null, 
+        'POST', 
+        bookingData
+      );
+
+      if (!apiConfig?.bookings) {
+        setApiConfig(prev => ({ ...prev, bookings: config }));
       }
 
-      const bookingResult = await response.json();
       console.log('Booking successful:', bookingResult);
       onClose();
     } catch (err) {

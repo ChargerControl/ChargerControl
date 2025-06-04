@@ -79,7 +79,17 @@ public class StationService {
         }
         
         return stationRepository.save(station);
+    }// Adicione este método ao seu StationService existente
+
+@Transactional(readOnly = true)
+public Optional<Station> getStationWithChargingPorts(Long stationId) {
+    Optional<Station> station = stationRepository.findById(stationId);
+    if (station.isPresent()) {
+        // Force loading of charging ports to avoid lazy initialization
+        station.get().getChargingPorts().size();
     }
+    return station;
+}
     
     @Transactional
     public void deleteStation(Long id) {

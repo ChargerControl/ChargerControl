@@ -1,13 +1,11 @@
 package chargercontrol.userapi.service;
 
-import chargercontrol.userapi.model.BookSlot;
-import chargercontrol.userapi.model.BookingStatus;
-import chargercontrol.userapi.model.ChargingPort;
-import chargercontrol.userapi.model.User;
+import chargercontrol.userapi.model.*;
 import chargercontrol.userapi.repository.BookSlotRepository;
 import chargercontrol.userapi.repository.ChargingPortRepository;
 import chargercontrol.userapi.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +19,64 @@ public class BookSlotService {
     private final BookSlotRepository bookSlotRepository;
     private final UserRepository userRepository;
     private final ChargingPortRepository chargingPortRepository;
+    
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private StationService stationService;
 
     public BookSlotService(BookSlotRepository bookSlotRepository, UserRepository userRepository,
             ChargingPortRepository chargingPortRepository) {
         this.bookSlotRepository = bookSlotRepository;
         this.userRepository = userRepository;
         this.chargingPortRepository = chargingPortRepository;
+    }
+
+    @Transactional
+    public BookSlot createBookingWithValidation(BookRequest bookRequest) {
+        // Get user directly by userId
+        User user = userService.getUserById(bookRequest.getUserId());
+        if (user == null) {
+            throw new RuntimeException("User not found with id: " + bookRequest.getUserId());
+        }
+
+        // Get station with charging ports (this should handle lazy loading properly)
+        Station station = stationService.getStationWithChargingPorts(bookRequest.getStationId())
+                .orElseThrow(() -> new RuntimeException("Station not found with id: " + bookRequest.getStationId()));
+
+        // Find an available slot in any of the charging ports
+        ChargingPort availablePort = station.getChargingPorts().stream()
+                .filter(port -> port.getStatus() == ChargingPortStatus.AVAILABLE)
+                .filter(port -> isSlotAvailable(port, bookRequest.getStartTime(), bookRequest.getDuration()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No available slots at this station for the requested time"));
+
+        // Get the car from the user's cars
+        Car car = user.getCars().stream()
+                .filter(c -> c.getId().equals(bookRequest.getCarId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Car not found with id: " + bookRequest.getCarId()));
+
+        // Create the booking object
+        BookSlot bookSlot = new BookSlot();
+        bookSlot.setUser(user);
+        bookSlot.setChargingPort(availablePort);
+        bookSlot.setCar(car);
+        bookSlot.setBookingTime(bookRequest.getStartTime());
+        bookSlot.setDuration(bookRequest.getDuration());
+        bookSlot.setStatus(BookingStatus.PENDING);
+
+        // Save and return the booking
+        return createBooking(bookSlot);
+    }
+
+    // Helper method to check if a slot is available
+    private boolean isSlotAvailable(ChargingPort port, LocalDateTime startTime, Integer duration) {
+        LocalDateTime endTime = startTime.plusMinutes(duration);
+        List<BookSlot> overlappingBookings = getBookingsByChargingPortIdAndTimeRange(
+                port.getId(), startTime, endTime);
+        return overlappingBookings.isEmpty();
     }
 
     @Transactional
