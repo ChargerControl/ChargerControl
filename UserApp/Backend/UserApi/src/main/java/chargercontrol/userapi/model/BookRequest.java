@@ -13,7 +13,6 @@ public class BookRequest {
     //start hour and day of the booking
     private LocalDateTime startTime;
 
-    private LocalDateTime endTime;
 
     private Long stationId;
 
