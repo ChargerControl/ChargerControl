@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -53,4 +54,23 @@ public class Car {
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore // Evita lazy loading exception
     private List<BookSlot> bookSlots;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Car)) return false;
+        Car car = (Car) o;
+        return Double.compare(car.maximumCharge, maximumCharge) == 0 &&
+                Objects.equals(id, car.id) &&
+                Objects.equals(model, car.model) &&
+                Objects.equals(brand, car.brand) &&
+                Objects.equals(carClass, car.carClass) &&
+                Objects.equals(imageUrl, car.imageUrl) &&
+                Objects.equals(owner, car.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, model, brand, maximumCharge, carClass, imageUrl, owner);
+    }
 }

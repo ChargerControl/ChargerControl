@@ -1,4 +1,4 @@
-/* 
+
 
 package chargercontrol.userapi.service;
 
@@ -312,4 +312,3 @@ class UserServiceTest {
     }
 }
 
-*/
