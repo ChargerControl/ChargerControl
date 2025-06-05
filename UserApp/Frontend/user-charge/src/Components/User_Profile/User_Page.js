@@ -198,31 +198,83 @@ function UserProfile() {
   
   // User data state
   const [userData, setUserData] = useState({
-    name: 'Maria Silva',
-    email: 'maria.silva@example.com',
-    phone: '+351 912 345 678',
-    location: 'Lisbon, Portugal',
-    joinDate: 'October 2023'
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    joinDate: ''
   });
 
-  const [editData, setEditData] = useState({...userData});
+  const [editData, setEditData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    joinDate: ''
+  });
 
-  useEffect(() => {
-    const userEmail = localStorage.getItem("userEmail") || "";
-    const userName = localStorage.getItem("userName") || "";
-    
-    if (userEmail && userName) {
+  // Função para decodificar o JWT
+  const decodeJWT = (token) => {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded;
+    } catch (error) {
+      console.error('Erro ao decodificar token:', error);
+      return null;
+    }
+  };
+
+  // Função para obter o token do localStorage
+  const getAuthToken = () => {
+    const tokenKeys = ['token', 'authToken', 'accessToken', 'jwt', 'jwtToken'];
+    for (const key of tokenKeys) {
+      const token = localStorage.getItem(key);
+      if (token) return token;
+    }
+    throw new Error('Authentication token not found');
+  };
+
+  // Função para buscar o nome do usuário pelo userId
+  const fetchUserNameFromBackend = async () => {
+    try {
+      const token = getAuthToken();
+      const decoded = decodeJWT(token);
+      if (!decoded) throw new Error('Invalid token');
+      const userEmail = decoded.sub || decoded.email || decoded.username || decoded.user;
+      if (!userEmail) throw new Error('Email not found in token');
+      // Buscar todos os usuários
+      const response = await fetch('http://localhost:8080/apiV1/user/all', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const users = await response.json();
+      const currentUser = users.find(user =>
+        user.email === userEmail ||
+        user.username === userEmail ||
+        user.sub === userEmail
+      );
+      if (!currentUser) throw new Error('User not found');
       setUserData(prev => ({
         ...prev,
-        email: userEmail,
-        name: userName
+        name: currentUser.name,
+        email: currentUser.email
       }));
       setEditData(prev => ({
         ...prev,
-        email: userEmail,
-        name: userName
+        name: currentUser.name,
+        email: currentUser.email
       }));
+    } catch (error) {
+      console.error('Erro ao buscar nome do usuário:', error);
     }
+  };
+
+  useEffect(() => {
+    fetchUserNameFromBackend();
   }, []);
 
   useEffect(() => {
@@ -359,7 +411,7 @@ function UserProfile() {
                         textShadow: '0 0 10px rgba(118, 255, 3, 0.3)'
                       }}
                     >
-                      {userData.name}
+                      {userData.name || ''}
                     </Typography>
                   </Box>
                 </Grid>
