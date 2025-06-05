@@ -26,8 +26,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<Object> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex) {
         return new ResponseEntity<>(
-            Map.of("error", "Email already in use", "jwt", null),
-            HttpStatus.BAD_REQUEST
+                Map.ofEntries(
+                        Map.entry("error", "Email already in use"),
+                        Map.entry("jwt", null)
+                ),
+                HttpStatus.BAD_REQUEST
         );
     }
+
 }
