@@ -34,8 +34,8 @@ import {
 } from '@mui/icons-material';
 import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import Cars from './Cars';
-
 import ChargerInformation from './ChargerInformation';
+import UserStats from './UserStats';
 
 // Tema harmonizado com navbar e home
 const darkTheme = createTheme({
@@ -379,136 +379,34 @@ function UserProfile() {
                   variant="scrollable"
                   scrollButtons="auto"
                 >
-                  <Tab label="Personal Information" />
                   <Tab label="Charger Information" />
                   <Tab label="My Vehicles" />
+                  <Tab label="User Stats" />
                 </NeonTabs>
                 <Divider sx={{ mt: 2, backgroundColor: 'rgba(118, 255, 3, 0.2)' }} />
               </Box>
 
               {/* Personal Information Tab */}
-              <TabPanel value={tabValue} index={0}>
-                <Box sx={{ p: 4 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                    <Typography 
-                      variant="h5" 
-                      fontWeight="600"
-                      sx={{ color: 'white' }}
-                    >
-                      Personal Information
-                    </Typography>
-                    {editMode ? (
-                      <OutlineButton
-                        startIcon={<CloseIcon />}
-                        onClick={handleEditToggle}
-                      >
-                        Cancel
-                      </OutlineButton>
-                    ) : (
-                      <NeonButton
-                        startIcon={<EditIcon />}
-                        onClick={handleEditToggle}
-                      >
-                        Edit Profile
-                      </NeonButton>
-                    )}
-                  </Box>
-
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Card 
-                        variant="outlined" 
-                        sx={{ 
-                          p: 3, 
-                          borderRadius: 2,
-                          backgroundColor: 'rgba(51, 51, 51, 0.3)',
-                          border: '1px solid rgba(118, 255, 3, 0.2)',
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            borderColor: 'rgba(118, 255, 3, 0.4)',
-                            backgroundColor: 'rgba(51, 51, 51, 0.4)',
-                          }
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <PersonIcon sx={{ mr: 2, color: '#76ff03' }} />
-                          <Typography variant="subtitle2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                            Full Name
-                          </Typography>
-                        </Box>
-                        {editMode ? (
-                          <NeonTextField
-                            name="name"
-                            value={editData.name}
-                            onChange={handleInputChange}
-                            fullWidth
-                            variant="outlined"
-                          />
-                        ) : (
-                          <Typography variant="h6" fontWeight="500" sx={{ color: 'white' }}>
-                            {userData.name}
-                          </Typography>
-                        )}
-                      </Card>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Card 
-                        variant="outlined" 
-                        sx={{ 
-                          p: 3, 
-                          borderRadius: 2,
-                          backgroundColor: 'rgba(51, 51, 51, 0.3)',
-                          border: '1px solid rgba(118, 255, 3, 0.2)',
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            borderColor: 'rgba(118, 255, 3, 0.4)',
-                            backgroundColor: 'rgba(51, 51, 51, 0.4)',
-                          }
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <EmailIcon sx={{ mr: 2, color: '#76ff03' }} />
-                          <Typography variant="subtitle2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                            Email
-                          </Typography>
-                        </Box>
-                        <Typography variant="h6" fontWeight="500" sx={{ color: 'white' }}>
-                          {userData.email}
-                        </Typography>
-                      </Card>
-                    </Grid>
-
-                    
-                  </Grid>
-
-                  {editMode && (
-                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                      <OutlineButton onClick={handleEditToggle}>
-                        Cancel
-                      </OutlineButton>
-                      <NeonButton
-                        startIcon={<SaveIcon />}
-                        onClick={handleSaveProfile}
-                      >
-                        Save Changes
-                      </NeonButton>
-                    </Box>
-                  )}
-                </Box>
-              </TabPanel>
+             
 
               {/* Charger Information Tab */}
-              <TabPanel value={tabValue} index={1}>
+              <TabPanel value={tabValue} index={0}>
                 <Box sx={{ p: 4 }}>
                   <ChargerInformation />
                 </Box>
               </TabPanel>
 
               {/* Cars Tab */}
-              <TabPanel value={tabValue} index={2}>
+              <TabPanel value={tabValue} index={1}>
                 <Box sx={{ p: 4 }}>
                   <Cars />
+                </Box>
+              </TabPanel>
+
+              {/* User Stats Tab */}
+              <TabPanel value={tabValue} index={2}>
+                <Box sx={{ p: 4 }}>
+                  <UserStats />
                 </Box>
               </TabPanel>
             </CardContent>
