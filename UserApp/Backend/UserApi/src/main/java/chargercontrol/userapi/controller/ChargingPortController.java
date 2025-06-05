@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -96,16 +97,19 @@ public class ChargingPortController {
                 @ApiResponse(responseCode = "400", description = "Invalid charging port data"),
                 @ApiResponse(responseCode = "404", description = "Station not found")
         })
-        public ResponseEntity<ChargingPort> createChargingPort(
-                @Parameter(description = "ID of the station to add the charging port to") @PathVariable Long stationId,
-                @Valid @RequestBody ChargingPortRequest chargingPortRequest) {
+    public ResponseEntity<ChargingPort> createChargingPort(
+            @Parameter(description = "ID of the station to add the charging port to") @PathVariable Long stationId,
+            @Valid @RequestBody ChargingPortRequest chargingPortRequest) {
 
-        ChargingPort chargingPort = new ChargingPort();
-        chargingPort.setPortIdentifier(chargingPortRequest.getPortIdentifier());
-        chargingPort.setStatus(chargingPortRequest.getStatus());
-        chargingPort.setEnergyUsed(chargingPortRequest.getEnergyUsed());
+        try {
+            ChargingPort chargingPort = new ChargingPort();
+            chargingPort.setPortIdentifier(chargingPortRequest.getPortIdentifier());
+            chargingPort.setStatus(chargingPortRequest.getStatus());
+            chargingPort.setEnergyUsed(chargingPortRequest.getEnergyUsed());
 
-        ChargingPort newPort = chargingPortService.createChargingPort(stationId, chargingPort);
-        return new ResponseEntity<>(newPort, HttpStatus.CREATED);
+            ChargingPort newPort = chargingPortService.createChargingPort(stationId, chargingPort);
+            return new ResponseEntity<>(newPort, HttpStatus.CREATED);
+        } catch (EntityNotFoundException e) { // Catch specific exception for clearer handling
+            return ResponseEntity.notFound().build(); // Return 404 Not Found
         }
-}
+    }}

@@ -1,4 +1,4 @@
-/* 
+
 
 package chargercontrol.userapi.integration;
 
@@ -94,7 +94,7 @@ public class UserManagementIntegrationTest {
         userRepository.save(existingUser);
 
         // Try to register with same email
-        User newUser = new User();
+        RegisterRequest newUser = new RegisterRequest();
         newUser.setName("New User");
         newUser.setEmail("existing@example.com");
         newUser.setPassword("newpassword123");
@@ -173,4 +173,3 @@ public class UserManagementIntegrationTest {
     }
 }
 
-*/
