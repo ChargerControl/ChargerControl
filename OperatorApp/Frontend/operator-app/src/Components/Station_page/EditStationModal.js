@@ -45,10 +45,10 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
 
   // Opções para tipo de carregamento
   const chargingTypeOptions = [
-    { value: 'AC_SLOW', label: 'AC Lento' },
+    { value: 'AC_SLOW', label: 'AC Slow' },
     { value: 'AC_STANDARD', label: 'AC Standard' },
-    { value: 'DC_FAST', label: 'DC Rápido' },
-    { value: 'DC_ULTRA_FAST', label: 'DC Ultra Rápido' }
+    { value: 'DC_FAST', label: 'DC Fast' },
+    { value: 'DC_ULTRA_FAST', label: 'DC Ultra Fast' }
   ];
 
   // Carregar dados da estação quando o modal abrir
@@ -71,31 +71,24 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
   // Função para validar os dados do formulário
   const validateForm = () => {
     const errors = {};
-
     if (!formData.name.trim()) {
-      errors.name = 'Nome é obrigatório';
+      errors.name = 'Name is required';
     }
-
     if (!formData.location.trim()) {
-      errors.location = 'Localização é obrigatória';
+      errors.location = 'Location is required';
     }
-
     if (!formData.chargingType) {
-      errors.chargingType = 'Tipo de carregamento é obrigatório';
+      errors.chargingType = 'Charging type is required';
     }
-
     if (formData.power <= 0) {
-      errors.power = 'Potência deve ser maior que 0';
+      errors.power = 'Power must be greater than 0';
     }
-
     if (formData.latitude < -90 || formData.latitude > 90) {
-      errors.latitude = 'Latitude deve estar entre -90 e 90';
+      errors.latitude = 'Latitude must be between -90 and 90';
     }
-
     if (formData.longitude < -180 || formData.longitude > 180) {
-      errors.longitude = 'Longitude deve estar entre -180 e 180';
+      errors.longitude = 'Longitude must be between -180 and 180';
     }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -197,7 +190,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Edit />
           <Typography variant="h6">
-            Editar Estação #{station?.id}
+            Edit Station #{station?.id}
           </Typography>
         </Box>
       </DialogTitle>
@@ -215,7 +208,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Nome da Estação"
+                label="Station Name"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 error={!!validationErrors.name}
@@ -229,7 +222,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Localização"
+                label="Location"
                 value={formData.location}
                 onChange={(e) => handleInputChange('location', e.target.value)}
                 error={!!validationErrors.location}
@@ -249,10 +242,10 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
             {/* Tipo de Carregamento */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth error={!!validationErrors.chargingType} required>
-                <InputLabel>Tipo de Carregamento</InputLabel>
+                <InputLabel>Charging Type</InputLabel>
                 <Select
                   value={formData.chargingType}
-                  label="Tipo de Carregamento"
+                  label="Charging Type"
                   onChange={(e) => handleInputChange('chargingType', e.target.value)}
                   disabled={loading}
                 >
@@ -274,7 +267,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Potência"
+                label="Power"
                 type="number"
                 value={formData.power}
                 onChange={(e) => handleInputChange('power', parseFloat(e.target.value) || 0)}
@@ -303,7 +296,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
                 value={formData.latitude}
                 onChange={(e) => handleInputChange('latitude', parseFloat(e.target.value) || 0)}
                 error={!!validationErrors.latitude}
-                helperText={validationErrors.latitude || 'Entre -90 e 90'}
+                helperText={validationErrors.latitude || 'Between -90 and 90'}
                 disabled={loading}
                 inputProps={{ min: -90, max: 90, step: 0.000001 }}
               />
@@ -318,7 +311,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
                 value={formData.longitude}
                 onChange={(e) => handleInputChange('longitude', parseFloat(e.target.value) || 0)}
                 error={!!validationErrors.longitude}
-                helperText={validationErrors.longitude || 'Entre -180 e 180'}
+                helperText={validationErrors.longitude || 'Between -180 and 180'}
                 disabled={loading}
                 inputProps={{ min: -180, max: 180, step: 0.000001 }}
               />
@@ -337,7 +330,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
                 }
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography>Estação Disponível</Typography>
+                    <Typography>Station Available</Typography>
                     <Typography variant="caption" color="text.secondary">
                       ({formData.available ? 'Online' : 'Offline'})
                     </Typography>
@@ -355,7 +348,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
           disabled={loading}
           startIcon={<Cancel />}
         >
-          Cancelar
+          Cancel
         </Button>
         <Button
           onClick={handleSubmit}
@@ -364,7 +357,7 @@ const EditStationModal = ({ open, station, onClose, onStationUpdated }) => {
           startIcon={loading ? <CircularProgress size={20} /> : <Save />}
           sx={{ backgroundColor: '#2e7d32' }}
         >
-          {loading ? 'Atualizando...' : 'Salvar Alterações'}
+          {loading ? 'Updating...' : 'Save Changes'}
         </Button>
       </DialogActions>
     </Dialog>

@@ -8,16 +8,11 @@ import {
   TextField,
   Button,
   Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
   CircularProgress,
   Box,
   InputAdornment,
   Typography,
-  Divider,
   ToggleButton,
   ToggleButtonGroup
 } from '@mui/material';
@@ -36,13 +31,17 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
   // Mapeamento dos tipos de carregamento para os valores da API
   const chargingTypeMap = {
     'ac3': 'AC_SLOW',
-    'ac7': 'AC_SLOW', 
-    'ac11': 'AC_STANDARD',
-    'ac22': 'AC_STANDARD',
+    'ac7': 'AC_SLOW',
+    'ac11': 'AC_FAST',
+    'ac22': 'AC_FAST',
     'dc50': 'DC_FAST',
     'dc100': 'DC_FAST',
     'dc150': 'DC_ULTRA_FAST',
-    'dc350': 'DC_ULTRA_FAST'
+    'dc350': 'DC_ULTRA_FAST',
+    'tesla': 'TESLA_SUPERCHARGER',
+    'ccs': 'CCS',
+    'chademo': 'CHADEMO',
+    'type2': 'TYPE2'
   };
 
   // Função para converter coordenadas em latitude e longitude
@@ -124,8 +123,8 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
         longitude: longitude,
         available: true, // Sempre disponível por padrão
         chargingType: chargingTypeMap[newStation.type] || 'AC_STANDARD',
-        totalPorts: parseInt(newStation.totalPorts) || 1,
-        availablePorts: parseInt(newStation.totalPorts) || 1
+        totalPorts: 10,        // Valor fixo 10
+        availablePorts: 10     // Valor fixo 10
       };
 
       console.log('Enviando para API:', stationData); // Debug log
@@ -162,7 +161,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <AddCircleOutline />
           <Typography variant="h6">
-            Registrar Nova Estação de Carregamento
+            Register New Charging Station
           </Typography>
         </Box>
       </DialogTitle>
@@ -174,25 +173,25 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
         )}
         {success && (
           <Alert severity="success" sx={{ mb: 3 }}>
-            Estação criada com sucesso!
+            Station created successfully!
           </Alert>
         )}
         <Box sx={{ pt: 1 }}>
           <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-            Dados da Estação (Todos obrigatórios)
+            Station Data (All required)
           </Typography>
           <Grid container spacing={3}>
-            {/* Nome da Estação */}
+            {/* Station Name */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Nome da Estação"
+                label="Station Name"
                 value={newStation.name}
                 onChange={(e) => onStationChange('name', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
                 error={!newStation.name && error}
-                helperText={!newStation.name && error ? 'Campo obrigatório' : ''}
+                helperText={!newStation.name && error ? 'Required field' : ''}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -202,17 +201,17 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 }}
               />
             </Grid>
-            {/* Localização */}
+            {/* Location */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Localização"
+                label="Location"
                 value={newStation.location}
                 onChange={(e) => onStationChange('location', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
                 error={!newStation.location && error}
-                helperText={!newStation.location && error ? 'Endereço da estação (obrigatório)' : ''}
+                helperText={!newStation.location && error ? 'Station address (required)' : ''}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -222,11 +221,11 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 }}
               />
             </Grid>
-            {/* Tipo de Carregamento */}
+            {/* Charging Type */}
             <Grid item xs={12} md={6}>
               <Box sx={{ minHeight: 56, width: '100%' }}>
                 <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
-                  Tipo de Carregamento
+                  Charging Type
                 </Typography>
                 <ToggleButtonGroup
                   color="primary"
@@ -236,34 +235,34 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                   onChange={(_e, value) => value && onStationChange('type', value)}
                   sx={{ width: '100%', flexWrap: 'wrap' }}
                 >
-                  <ToggleButton value="ac3" sx={{ flex: 1, minWidth: 120 }}>AC Lento (3kW)</ToggleButton>
-                  <ToggleButton value="ac7" sx={{ flex: 1, minWidth: 120 }}>AC Lento (7kW)</ToggleButton>
-                  <ToggleButton value="ac11" sx={{ flex: 1, minWidth: 120 }}>AC Standard (11kW)</ToggleButton>
-                  <ToggleButton value="ac22" sx={{ flex: 1, minWidth: 120 }}>AC Standard (22kW)</ToggleButton>
+                  <ToggleButton value="ac3" sx={{ flex: 1, minWidth: 120 }}>AC Slow (3kW)</ToggleButton>
+                  <ToggleButton value="ac11" sx={{ flex: 1, minWidth: 120 }}>AC Fast (11kW)</ToggleButton>
                   <ToggleButton value="dc50" sx={{ flex: 1, minWidth: 120 }}>DC Fast (50kW)</ToggleButton>
-                  <ToggleButton value="dc100" sx={{ flex: 1, minWidth: 120 }}>DC Fast (100kW)</ToggleButton>
-                  <ToggleButton value="dc150" sx={{ flex: 1, minWidth: 120 }}>DC Ultra Fast (150kW)</ToggleButton>
-                  <ToggleButton value="dc350" sx={{ flex: 1, minWidth: 120 }}>DC Ultra Fast (350kW)</ToggleButton>
+                  <ToggleButton value="dc150" sx={{ flex: 1, minWidth: 120 }}>DC Ultra (150kW)</ToggleButton>
+                  <ToggleButton value="tesla" sx={{ flex: 1, minWidth: 120 }}>Tesla Supercharger</ToggleButton>
+                  <ToggleButton value="ccs" sx={{ flex: 1, minWidth: 120 }}>CCS</ToggleButton>
+                  <ToggleButton value="chademo" sx={{ flex: 1, minWidth: 120 }}>CHAdeMO</ToggleButton>
+                  <ToggleButton value="type2" sx={{ flex: 1, minWidth: 120 }}>Type 2</ToggleButton>
                 </ToggleButtonGroup>
                 {(!newStation.type && error) && (
                   <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
-                    Campo obrigatório
+                    Required field
                   </Typography>
                 )}
               </Box>
             </Grid>
-            {/* Potência */}
+            {/* Power */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Potência (kW)"
+                label="Power (kW)"
                 type="number"
                 value={newStation.power}
                 onChange={(e) => onStationChange('power', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
                 error={(!newStation.power || newStation.power <= 0) && error}
-                helperText={(!newStation.power || newStation.power <= 0) && error ? 'Potência em kW (obrigatório)' : ''}
+                helperText={(!newStation.power || newStation.power <= 0) && error ? 'Power in kW (required)' : ''}
                 inputProps={{ min: 1 }}
                 InputProps={{
                   startAdornment: (
@@ -275,33 +274,18 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 }}
               />
             </Grid>
-            {/* Número total de portas */}
+            {/* GPS Coordinates */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Número de Portas"
-                type="number"
-                value={newStation.totalPorts}
-                onChange={(e) => onStationChange('totalPorts', e.target.value)}
-                sx={{ minHeight: 56 }}
-                required
-                error={(!newStation.totalPorts || newStation.totalPorts <= 0) && error}
-                helperText={(!newStation.totalPorts || newStation.totalPorts <= 0) && error ? 'Campo obrigatório' : ''}
-                inputProps={{ min: 1 }}
-              />
-            </Grid>
-            {/* Coordenadas GPS */}
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Coordenadas GPS"
+                label="GPS Coordinates"
                 placeholder="38.7578, -9.1904"
                 value={newStation.coordinates}
                 onChange={(e) => onStationChange('coordinates', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
                 error={!newStation.coordinates && error}
-                helperText={!newStation.coordinates && error ? 'Campo obrigatório. Formato: latitude, longitude' : 'Formato: latitude, longitude'}
+                helperText={!newStation.coordinates && error ? 'Required field. Format: latitude, longitude' : 'Format: latitude, longitude'}
               />
             </Grid>
           </Grid>
@@ -309,7 +293,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleClose} disabled={loading} startIcon={<Cancel />}>
-          Cancelar
+          Cancel
         </Button>
         <Button 
           onClick={handleSave} 
@@ -317,7 +301,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
           sx={{ backgroundColor: '#2e7d32' }}
           disabled={loading}
           startIcon={loading ? <CircularProgress size={20} /> : <AddCircleOutline />}>
-          {loading ? 'Registrando...' : 'Registrar Estação'}
+          {loading ? 'Registering...' : 'Register Station'}
         </Button>
       </DialogActions>
     </Dialog>
