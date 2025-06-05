@@ -120,18 +120,18 @@ const StatsCards = () => {
 
   const cardConfigs = [
     {
-      title: 'Estações Online',
+      title: 'Online Stations',
       value: `${stats.onlineStations}/${stats.totalStations}`,
-      subtitle: `${Math.round((stats.onlineStations / Math.max(stats.totalStations, 1)) * 100)}% operacional`,
+      subtitle: `${Math.round((stats.onlineStations / Math.max(stats.totalStations, 1)) * 100)}% operational`,
       icon: CheckCircle,
       color: 'success.main',
       bgColor: 'success.lighter',
       darkBgColor: '#1b5e20'
     },
     {
-      title: 'Ports Disponíveis',
+      title: 'Available Ports',
       value: stats.totalAvailablePorts,
-      subtitle: `${stats.totalChargingPorts} em carregamento`,
+      subtitle: `${stats.totalChargingPorts} charging`,
       icon: EvStation,
       color: 'primary.main',
       bgColor: 'primary.lighter',
@@ -230,9 +230,9 @@ const StatsCards = () => {
     <Box sx={{ mb: 6 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" color="text.secondary">
-          Estatísticas em Tempo Real
+          Real-Time Statistics
         </Typography>
-        <Tooltip title="Atualizar dados">
+        <Tooltip title="Refresh data">
           <IconButton 
             onClick={handleRefresh} 
             disabled={refreshing}

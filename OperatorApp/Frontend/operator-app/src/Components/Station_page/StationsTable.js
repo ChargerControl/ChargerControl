@@ -119,10 +119,10 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para formatar o tipo de carregamento
   const formatChargingType = (chargingType) => {
     const typeMap = {
-      'AC_SLOW': 'AC Lento',
+      'AC_SLOW': 'AC Slow',
       'AC_STANDARD': 'AC Standard', 
-      'DC_FAST': 'DC Rápido',
-      'DC_ULTRA_FAST': 'DC Ultra Rápido'
+      'DC_FAST': 'DC Fast',
+      'DC_ULTRA_FAST': 'DC Ultra Fast'
     };
     return typeMap[chargingType] || chargingType;
   };
@@ -136,10 +136,10 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para formatar o status da porta de carregamento
   const formatPortStatus = (status) => {
     const statusMap = {
-      'AVAILABLE': 'Disponível',
-      'OCCUPIED': 'Ocupada',
-      'OUT_OF_ORDER': 'Fora de Serviço',
-      'MAINTENANCE': 'Manutenção'
+      'AVAILABLE': 'Available',
+      'OCCUPIED': 'Occupied',
+      'OUT_OF_ORDER': 'Out of Service',
+      'MAINTENANCE': 'Maintenance'
     };
     return statusMap[status] || status;
   };
@@ -548,10 +548,10 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">
-          Gestão de Estações ({localStations.length})
+          Station Management ({localStations.length})
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title="Atualizar lista">
+          <Tooltip title="Refresh list">
             <IconButton onClick={onRefresh} color="primary">
               <Refresh />
             </IconButton>
@@ -562,7 +562,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
             onClick={onAddStation}
             sx={{ backgroundColor: '#2e7d32' }}
           >
-            Nova Estação
+            New Station
           </Button>
         </Box>
       </Box>
@@ -577,10 +577,10 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
           border: '1px dashed #ddd'
         }}>
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            Nenhuma estação encontrada
+            No stations found
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Adicione sua primeira estação de carregamento
+            Add your first charging station
           </Typography>
           <Button
             variant="contained"
@@ -588,7 +588,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
             onClick={onAddStation}
             sx={{ backgroundColor: '#2e7d32' }}
           >
-            Adicionar Estação
+            Add Station
           </Button>
         </Box>
       ) : (
@@ -597,13 +597,13 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
             <TableHead>
               <TableRow>
                 <TableCell><strong>ID</strong></TableCell>
-                <TableCell><strong>Nome</strong></TableCell>
-                <TableCell><strong>Localização</strong></TableCell>
+                <TableCell><strong>Name</strong></TableCell>
+                <TableCell><strong>Location</strong></TableCell>
                 <TableCell><strong>Status</strong></TableCell>
-                <TableCell><strong>Tipo</strong></TableCell>
-                <TableCell><strong>Potência</strong></TableCell>
-                <TableCell><strong>Coordenadas</strong></TableCell>
-                <TableCell><strong>Ações</strong></TableCell>
+                <TableCell><strong>Type</strong></TableCell>
+                <TableCell><strong>Power</strong></TableCell>
+                <TableCell><strong>Coordinates</strong></TableCell>
+                <TableCell><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -660,7 +660,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                   
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <Tooltip title="Ver portas de carregamento">
+                      <Tooltip title="View charging ports">
                         <IconButton 
                           size="small" 
                           onClick={() => handleOpenChargingPorts(station)}
@@ -669,7 +669,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                           <EvStation />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Editar estação">
+                      <Tooltip title="Edit station">
                         <IconButton 
                           size="small" 
                           onClick={() => handleEditStation(station)}
@@ -678,7 +678,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                           <Edit />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Eliminar estação">
+                      <Tooltip title="Delete station">
                         <IconButton 
                           size="small" 
                           onClick={() => handleOpenDeleteStation(station)}
@@ -705,9 +705,9 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            Portas de Carregamento - {chargingPortsDialog.stationName}
+            Charging Ports - {chargingPortsDialog.stationName}
             <Box sx={{ flex: 1 }} />
-            <Tooltip title="Adicionar nova porta">
+            <Tooltip title="Add new port">
               <IconButton color="primary" onClick={handleOpenAddPort} size="small">
                 <AddIcon />
               </IconButton>
@@ -728,7 +728,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
           ) : chargingPortsDialog.ports.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" color="text.secondary">
-                Nenhuma porta de carregamento encontrada
+                No charging ports found
               </Typography>
             </Box>
           ) : (
@@ -740,7 +740,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                           <Typography variant="subtitle1" fontWeight="medium">
-                            Porta #{port.id}
+                            Port #{port.id}
                           </Typography>
                           <Chip
                             label={formatPortStatus(port.status)}
@@ -753,7 +753,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                     />
                     <ListItemSecondaryAction>
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Tooltip title="Ver detalhes">
+                        <Tooltip title="View details">
                           <IconButton
                             edge="end"
                             color="info"
@@ -762,7 +762,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                             <Info />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Eliminar porta">
+                        <Tooltip title="Delete port">
                           <IconButton
                             edge="end"
                             color="error"
@@ -781,7 +781,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseChargingPorts}>Fechar</Button>
+          <Button onClick={handleCloseChargingPorts}>Close</Button>
         </DialogActions>
       </Dialog>
 
@@ -795,7 +795,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <EvStation />
-            Detalhes da Porta
+            Port Details
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -841,7 +841,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                             <BatteryChargingFull sx={{ mr: 1, color: 'text.secondary' }} />
                             <Box>
                               <Typography variant="body2" color="text.secondary">
-                                Energia Utilizada
+                                Energy Used
                               </Typography>
                               <Typography variant="body1" fontWeight="medium">
                                 {formatEnergyUsed(portDetailsDialog.port.energyUsed)}
@@ -853,7 +853,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                         <Grid item xs={12}>
                           <Box sx={{ mb: 2 }}>
                             <Typography variant="body2" color="text.secondary">
-                              Identificador da Porta
+                              Port Identifier
                             </Typography>
                             <Typography variant="body1" fontWeight="medium">
                               {portDetailsDialog.port.portIdentifier || 'N/A'}
@@ -869,20 +869,20 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClosePortDetails}>Fechar</Button>
+          <Button onClick={handleClosePortDetails}>Close</Button>
         </DialogActions>
       </Dialog>
 
       {/* Modal de criação de nova porta */}
       <Dialog open={addPortDialog.open} onClose={handleCloseAddPort} maxWidth="xs" fullWidth>
-        <DialogTitle>Adicionar Nova Porta</DialogTitle>
+        <DialogTitle>Add New Port</DialogTitle>
         <DialogContent>
           {addPortDialog.error && (
             <Alert severity="error" sx={{ mb: 2 }}>{addPortDialog.error}</Alert>
           )}
           <Box component="form" sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
-              label="Identificador da Porta"
+              label="Port Identifier"
               value={addPortDialog.portIdentifier}
               onChange={e => handleAddPortChange('portIdentifier', e.target.value)}
               required
@@ -895,13 +895,13 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
               onChange={e => handleAddPortChange('status', e.target.value)}
               fullWidth
             >
-              <MenuItem value="AVAILABLE">Disponível</MenuItem>
-              <MenuItem value="OCCUPIED">Ocupada</MenuItem>
-              <MenuItem value="OUT_OF_ORDER">Fora de Serviço</MenuItem>
-              <MenuItem value="MAINTENANCE">Manutenção</MenuItem>
+              <MenuItem value="AVAILABLE">Available</MenuItem>
+              <MenuItem value="OCCUPIED">Occupied</MenuItem>
+              <MenuItem value="OUT_OF_ORDER">Out of Service</MenuItem>
+              <MenuItem value="MAINTENANCE">Maintenance</MenuItem>
             </TextField>
             <TextField
-              label="Energia Utilizada (kWh)"
+              label="Energy Used (kWh)"
               type="number"
               value={addPortDialog.energyUsed}
               onChange={e => handleAddPortChange('energyUsed', e.target.value)}
@@ -911,7 +911,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddPort} disabled={addPortDialog.loading}>Cancelar</Button>
+          <Button onClick={handleCloseAddPort} disabled={addPortDialog.loading}>Cancel</Button>
           <Button 
             onClick={handleAddPortSubmit} 
             variant="contained" 
@@ -919,31 +919,30 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
             startIcon={addPortDialog.loading ? <CircularProgress size={20} /> : <AddIcon />}
             sx={{ backgroundColor: '#2e7d32' }}
           >
-            {addPortDialog.loading ? 'Adicionando...' : 'Adicionar'}
+            {addPortDialog.loading ? 'Adding...' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Modal de Confirmação de Eliminação da Estação */}
       <Dialog open={deleteDialog.open} onClose={handleCloseDeleteStation}>
-        <DialogTitle>Confirmar Eliminação</DialogTitle>
+        <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
           {deleteDialog.error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {deleteDialog.error}
             </Alert>
           )}
-          
           <Typography>
-            Tem a certeza que deseja eliminar a estação <strong>{deleteDialog.station?.name}</strong>?
+            Are you sure you want to delete the station <strong>{deleteDialog.station?.name}</strong>?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Esta ação não pode ser desfeita e eliminará permanentemente a estação e todas as suas portas de carregamento.
+            This action cannot be undone and will permanently delete the station and all its charging ports.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteStation} disabled={deleteDialog.loading}>
-            Cancelar
+            Cancel
           </Button>
           <Button 
             onClick={handleConfirmDeleteStation} 
@@ -954,10 +953,10 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
             {deleteDialog.loading ? (
               <>
                 <CircularProgress size={20} sx={{ mr: 1 }} />
-                Eliminando...
+                Deleting...
               </>
             ) : (
-              'Eliminar'
+              'Delete'
             )}
           </Button>
         </DialogActions>

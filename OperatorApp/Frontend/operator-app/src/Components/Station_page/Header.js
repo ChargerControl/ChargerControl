@@ -136,32 +136,32 @@ const Header = ({ onProfileAction }) => {
                   <ListItemIcon>
                     <Settings />
                   </ListItemIcon>
-                  <ListItemText primary="Editar Perfil" />
+                  <ListItemText primary="Edit Profile" />
                 </ListItem>
                 <Divider />
                 <ListItem button onClick={handleLogout}>
                   <ListItemIcon>
                     <ExitToApp />
                   </ListItemIcon>
-                  <ListItemText primary="Sair" />
+                  <ListItemText primary="Logout" />
                 </ListItem>
               </List>
             </Paper>
           )}
           {/* Modal de edição de perfil */}
           <Dialog open={editProfileOpen} onClose={() => setEditProfileOpen(false)} maxWidth="xs" fullWidth>
-            <DialogTitle>Editar Perfil</DialogTitle>
+            <DialogTitle>Edit Profile</DialogTitle>
             <DialogContent>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                 <TextField
-                  label="Nome do Perfil"
+                  label="Profile Name"
                   value={profileName}
                   onChange={e => setProfileName(e.target.value)}
                   fullWidth
                   autoFocus
                 />
                 <TextField
-                  label="Nova Senha"
+                  label="New Password"
                   type={showPassword ? 'text' : 'password'}
                   value={profilePassword}
                   onChange={e => setProfilePassword(e.target.value)}
@@ -175,15 +175,15 @@ const Header = ({ onProfileAction }) => {
                       </InputAdornment>
                     )
                   }}
-                  helperText="Deixe em branco para não alterar a senha"
+                  helperText="Leave blank to keep current password"
                 />
                 {profileError && <Typography color="error" variant="body2">{profileError}</Typography>}
                 {profileSuccess && <Typography color="success.main" variant="body2">{profileSuccess}</Typography>}
               </Box>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setEditProfileOpen(false)}>Cancelar</Button>
-              <Button onClick={handleProfileSave} variant="contained" sx={{ backgroundColor: '#2e7d32' }}>Salvar</Button>
+              <Button onClick={() => setEditProfileOpen(false)}>Cancel</Button>
+              <Button onClick={handleProfileSave} variant="contained" sx={{ backgroundColor: '#2e7d32' }}>Save</Button>
             </DialogActions>
           </Dialog>
         </Box>

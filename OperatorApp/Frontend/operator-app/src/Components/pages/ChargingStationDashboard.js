@@ -24,50 +24,47 @@ const ChargingStationDashboard = () => {
     totalPorts: '1'
   });
 
-  // Função para buscar estações da API
+  // Function to fetch stations from API
   const fetchStations = async () => {
     try {
       setLoading(true);
       const response = await fetch('http://localhost:8081/apiV1/stations');
-      
       if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-      
       const data = await response.json();
       setStations(data);
       setError('');
     } catch (err) {
-      console.error('Erro ao buscar estações:', err);
-      setError('Erro ao carregar estações. Verifique se o servidor está funcionando.');
+      console.error('Error fetching stations:', err);
+      setError('Error loading stations. Please check if the server is running.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Carregar estações ao montar o componente
+  // Load stations on component mount
   useEffect(() => {
     fetchStations();
   }, []);
 
-  // Calcular estatísticas baseadas nos dados reais
+  // Calculate statistics based on real data
   const calculateStats = () => {
     const totalStations = stations.length;
     const onlineStations = stations.filter(s => s.available).length;
-    
     return {
       onlineStations: `${onlineStations}/${totalStations}`,
-      todayRevenue: '€559', // Placeholder - seria calculado com dados de transações
-      co2Saved: '2.5t', // Placeholder - seria calculado baseado no uso
-      activeAlerts: '0' // Placeholder - seria baseado em alertas reais
+      todayRevenue: '€559', // Placeholder - should be calculated from transactions data
+      co2Saved: '2.5t', // Placeholder - should be calculated based on usage
+      activeAlerts: '0' // Placeholder - should be based on real alerts
     };
   };
 
   const stats = calculateStats();
 
-  // Alertas fictícios (poderiam vir da API também)
+  // Example alerts (could also come from API)
   const alerts = [
-    { id: 1, type: 'info', message: `${stations.length} estações carregadas com sucesso`, time: new Date().toLocaleTimeString() }
+    { id: 1, type: 'info', message: `${stations.length} stations loaded successfully`, time: new Date().toLocaleTimeString() }
   ];
 
   // Handlers
@@ -120,7 +117,7 @@ const ChargingStationDashboard = () => {
         <Card>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={selectedTab} onChange={(e, newValue) => setSelectedTab(newValue)}>
-              <Tab label="Estações" />
+              <Tab label="Stations" />
             </Tabs>
           </Box>
 
