@@ -28,7 +28,7 @@ const ChargingStationDashboard = () => {
   const fetchStations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8081/apiV1/stations');
+      const response = await fetch('http://192.168.160.7:8081/apiV1/stations');
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }

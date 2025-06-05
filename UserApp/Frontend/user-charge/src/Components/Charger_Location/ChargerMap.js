@@ -297,7 +297,7 @@ function Map() {
     const fetchStations = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:8080/apiV1/stations');
+        const response = await fetch('http://192.168.160.7:8080/apiV1/stations');
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -325,7 +325,7 @@ function Map() {
         const jwtToken = localStorage.getItem('jwt');
         if (!jwtToken) return;
         
-        const response = await fetch(`http://localhost:8080/apiV1/cars/user/${jwtToken}`);
+        const response = await fetch(`http://192.168.160.7:8080/apiV1/cars/user/${jwtToken}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

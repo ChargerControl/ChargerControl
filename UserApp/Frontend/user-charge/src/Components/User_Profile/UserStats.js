@@ -160,22 +160,22 @@ function UserStats() {
   // Centralized API configurations
   const API_CONFIGS = {
     users: [
-      { baseUrl: 'http://localhost:8080', path: '/apiV1/user/all' },
-      { baseUrl: 'http://localhost:3000', path: '/apiV1/user/all' },
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/user/all' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/user/all' },
       { baseUrl: '', path: '/apiV1/user/all' },
       { baseUrl: '', path: '/api/v1/user/all' },
       { baseUrl: '', path: '/api/user/all' }
     ],
     cars: [
-      { baseUrl: 'http://localhost:8080', path: '/apiV1/cars/user' },
-      { baseUrl: 'http://localhost:3000', path: '/apiV1/cars/user' },
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/cars/user' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/cars/user' },
       { baseUrl: '', path: '/apiV1/cars/user' },
       { baseUrl: '', path: '/api/v1/cars/user' },
       { baseUrl: '', path: '/api/cars/user' }
     ],
     bookings: [
-      { baseUrl: 'http://localhost:8080', path: '/apiV1/bookings/user' },
-      { baseUrl: 'http://localhost:3000', path: '/apiV1/bookings/user' },
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/bookings/user' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/bookings/user' },
       { baseUrl: '', path: '/apiV1/bookings/user' },
       { baseUrl: '', path: '/api/v1/bookings/user' },
       { baseUrl: '', path: '/api/bookings/user' }
