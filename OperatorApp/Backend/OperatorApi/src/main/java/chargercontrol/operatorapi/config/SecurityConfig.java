@@ -43,7 +43,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Define allowed origins
-        configuration.setAllowedOrigins(List.of("http://localhost:3001", "http://localhost:8081"));
+        configuration.setAllowedOrigins(List.of("http://192.168.160.7:3001", "http://192.168.160.7:8081"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("*")); // Permite todos os headers
