@@ -261,15 +261,15 @@ function BookingModal({ open, onClose, station }) {
     setNotification({
       open: true,
       type: 'success',
-      title: 'Reserva Criada com Sucesso!',
-      message: 'A sua reserva foi confirmada.',
+      title: 'Booking Created Successfully!',
+      message: 'Your booking has been confirmed.',
       details: {
         station: station.name,
         car: `${selectedCarObj.brand} ${selectedCarObj.model}`,
         licensePlate: selectedCarObj.licensePlate || 'N/A',
-        startTime: startTime.toLocaleString('pt-PT'),
-        endTime: endTime.toLocaleString('pt-PT'),
-        duration: `${duration} minutos`,
+        startTime: startTime.toLocaleString('en-GB'),
+        endTime: endTime.toLocaleString('en-GB'),
+        duration: `${duration} minutes`,
         estimatedEnergy: estimatedEnergy,
         stationPower: `${station.power} kW`,
         bookingId: bookingResult.id || bookingResult.bookingId || 'N/A'
@@ -279,90 +279,84 @@ function BookingModal({ open, onClose, station }) {
 
   // Função para mostrar notificação de erro
   const showErrorNotification = (error) => {
-    let errorMessage = 'Ocorreu um erro ao criar a reserva.';
+    let errorMessage = 'An error occurred while creating the booking.';
     let errorDetails = null;
 
-    // Verificar primeiro se é um erro relacionado com disponibilidade de porta
     if (error.details) {
       const errorText = (error.details.message || error.details.error || '').toLowerCase();
-      
-      // Verificações para diferentes variações da mensagem de porta não disponível
       if (errorText.includes('porta') && (errorText.includes('disponivel') || errorText.includes('disponível'))) {
-        errorMessage = 'Não há porta disponível!';
+        errorMessage = 'No available port!';
       } else if (errorText.includes('no available') && errorText.includes('port')) {
-        errorMessage = 'Não há porta disponível!';
+        errorMessage = 'No available port!';
       } else if (errorText.includes('station full') || errorText.includes('estação cheia')) {
-        errorMessage = 'Não há porta disponível!';
+        errorMessage = 'No available port!';
       } else if (errorText.includes('all ports occupied') || errorText.includes('todas as portas ocupadas')) {
-        errorMessage = 'Não há porta disponível!';
+        errorMessage = 'No available port!';
       }
     }
 
-    // Se não foi identificado como problema de porta, usar lógica anterior
-    if (errorMessage === 'Ocorreu um erro ao criar a reserva.' && error.status) {
+    if (errorMessage === 'An error occurred while creating the booking.' && error.status) {
       switch (error.status) {
         case 400:
-          errorMessage = 'Dados da reserva inválidos.';
+          errorMessage = 'Invalid booking data.';
           break;
         case 401:
-          errorMessage = 'Não autorizado. Verifique o seu login.';
+          errorMessage = 'Not authorized. Please check your login.';
           break;
         case 403:
-          errorMessage = 'Acesso negado.';
+          errorMessage = 'Access denied.';
           break;
         case 404:
-          errorMessage = 'Não há porta disponível!';
+          errorMessage = 'No available port!';
           break;
         case 409:
-          // Para conflitos, verificar se é sobre disponibilidade
           if (error.details) {
             const conflictText = (error.details.message || error.details.error || '').toLowerCase();
             if (conflictText.includes('porta') || conflictText.includes('port') || 
                 conflictText.includes('disponivel') || conflictText.includes('available')) {
-              errorMessage = 'Não há porta disponível!';
+              errorMessage = 'No available port!';
             } else {
-              errorMessage = 'Conflito: A estação pode já estar reservada neste horário.';
+              errorMessage = 'Conflict: The station may already be booked for this time.';
             }
           } else {
-            errorMessage = 'Não há porta disponível!'; // Assumir que 409 é geralmente sobre disponibilidade
+            errorMessage = 'No available port!';
           }
           break;
         case 422:
-          errorMessage = 'Não há porta disponível!'; // Unprocessable Entity - comum para regras de negócio
+          errorMessage = 'No available port!';
           break;
         case 500:
-          errorMessage = 'Erro interno do servidor.';
+          errorMessage = 'Internal server error.';
           break;
         default:
-          errorMessage = `Erro HTTP ${error.status}`;
+          errorMessage = `HTTP Error ${error.status}`;
       }
 
       if (error.details) {
         errorDetails = {
           status: error.status,
-          message: error.details.message || error.details.error || 'Detalhes não disponíveis',
-          timestamp: new Date().toLocaleString('pt-PT')
+          message: error.details.message || error.details.error || 'No details available',
+          timestamp: new Date().toLocaleString('en-GB')
         };
       }
     } else if (error.message.includes('token')) {
-      errorMessage = 'Problema de autenticação. Faça login novamente.';
+      errorMessage = 'Authentication problem. Please log in again.';
     } else if (error.message.includes('network') || error.message.includes('fetch')) {
-      errorMessage = 'Problema de conexão. Verifique a sua internet.';
+      errorMessage = 'Connection problem. Please check your internet.';
     }
 
-    // Para o caso específico de "Não há porta disponível", adicionar detalhes específicos
-    if (errorMessage === 'Não há porta disponível!' && !errorDetails) {
+    if (errorMessage === 'No available port!' && !errorDetails) {
       errorDetails = {
         status: error.status || 'N/A',
-        message: 'Todas as portas da estação estão ocupadas no horário selecionado. Tente outro horário ou estação.',
-        timestamp: new Date().toLocaleString('pt-PT')
+        message: 'All station ports are occupied at the selected time. Try another time or station.',
+        timestamp: new Date().toLocaleString('en-GB')
       };
     }
 
     setNotification({
       open: true,
       type: 'error',
-      title: 'Erro ao Criar Reserva',
+      title: 'Booking Error',
       message: errorMessage,
       details: errorDetails
     });
@@ -455,7 +449,7 @@ function BookingModal({ open, onClose, station }) {
                 }}
               >
                 <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
-                  Informações da Estação
+                  Station Information
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                   <Chip 
@@ -470,7 +464,7 @@ function BookingModal({ open, onClose, station }) {
                     size="small"
                   />
                   <Chip 
-                    label={station?.available ? 'Disponível' : 'Indisponível'}
+                    label={station?.available ? 'Available' : 'Unavailable'}
                     color={station?.available ? 'success' : 'error'}
                     size="small"
                   />
@@ -492,9 +486,8 @@ function BookingModal({ open, onClose, station }) {
                   value={duration}
                   onChange={(e) => setDuration(Number(e.target.value))}
                   fullWidth
-                  inputProps={{ min: 1, max: 1440 }} // Max 24 horas
+                  inputProps={{ min: 1, max: 1440 }}
                 />
-                
                 {/* Estimativa de energia */}
                 <Paper 
                   sx={{ 
@@ -508,20 +501,18 @@ function BookingModal({ open, onClose, station }) {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                     <BatteryChargingFull color="primary" />
                     <Typography variant="subtitle2" color="primary">
-                      Estimativa de Energia
+                      Estimated Energy
                     </Typography>
                   </Box>
-                  
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box>
                       <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
                         {formatEstimatedEnergy()}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Energia estimada
+                        Estimated energy
                       </Typography>
                     </Box>
-                    
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Schedule fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
@@ -529,9 +520,8 @@ function BookingModal({ open, onClose, station }) {
                       </Typography>
                     </Box>
                   </Box>
-                  
                   <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                    * Estimativa baseada na potência máxima da estação. O consumo real pode variar.
+                    * Estimate based on the station's maximum power. Actual consumption may vary.
                   </Typography>
                 </Paper>
               </Box>
@@ -550,7 +540,6 @@ function BookingModal({ open, onClose, station }) {
                   </MenuItem>
                 ))}
               </TextField>
-              
               {cars.length === 0 && !loading && (
                 <Alert severity="info">
                   No cars found. Please add a vehicle first.
@@ -593,28 +582,28 @@ function BookingModal({ open, onClose, station }) {
           {notification.details && (
             <Box sx={{ fontSize: '0.875rem', color: 'success.dark' }}>
               <Typography variant="caption" display="block">
-                <strong>Estação:</strong> {notification.details.station}
+                <strong>Station:</strong> {notification.details.station}
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>Veículo:</strong> {notification.details.car} ({notification.details.licensePlate})
+                <strong>Car:</strong> {notification.details.car} ({notification.details.licensePlate})
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>Início:</strong> {notification.details.startTime}
+                <strong>Start:</strong> {notification.details.startTime}
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>Fim:</strong> {notification.details.endTime}
+                <strong>End:</strong> {notification.details.endTime}
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>Duração:</strong> {notification.details.duration}
+                <strong>Duration:</strong> {notification.details.duration}
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>Potência:</strong> {notification.details.stationPower}
+                <strong>Power:</strong> {notification.details.stationPower}
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>Energia Estimada:</strong> {notification.details.estimatedEnergy}
+                <strong>Estimated Energy:</strong> {notification.details.estimatedEnergy}
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>ID da Reserva:</strong> {notification.details.bookingId}
+                <strong>Booking ID:</strong> {notification.details.bookingId}
               </Typography>
             </Box>
           )}
@@ -645,7 +634,7 @@ function BookingModal({ open, onClose, station }) {
                 <strong>Status:</strong> {notification.details.status}
               </Typography>
               <Typography variant="caption" display="block">
-                <strong>Detalhes:</strong> {notification.details.message}
+                <strong>Details:</strong> {notification.details.message}
               </Typography>
               <Typography variant="caption" display="block">
                 <strong>Timestamp:</strong> {notification.details.timestamp}

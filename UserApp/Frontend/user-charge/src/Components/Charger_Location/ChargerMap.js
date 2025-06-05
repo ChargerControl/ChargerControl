@@ -11,6 +11,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import BookingModal from './BookingModal';
 
+
 // Tema personalizado para consistência com a navbar
 const theme = createTheme({
   palette: {
@@ -254,7 +255,7 @@ function Map() {
         <Popup>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2" fontWeight="bold">
-              📍 A tua localização
+              📍 Your location
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
@@ -278,7 +279,7 @@ function Map() {
         },
         (error) => {
           console.warn('Erro ao obter localização do usuário:', error);
-          setLocationError('Não foi possível obter a localização atual');
+          setLocationError('Unable to retrieve current location');
         },
         {
           enableHighAccuracy: true,
@@ -287,7 +288,7 @@ function Map() {
         }
       );
     } else {
-      setLocationError('Geolocalização não é suportada neste browser');
+      setLocationError('Geolocation is not supported by this browser');
     }
   }, []);
 
@@ -299,15 +300,15 @@ function Map() {
         const response = await fetch('http://localhost:8080/apiV1/stations');
         
         if (!response.ok) {
-          throw new Error(`Erro HTTP! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
         setStations(data);
         setError(null);
       } catch (err) {
-        console.error('Erro ao buscar estações:', err);
-        setError('Erro ao carregar estações de carregamento. Verifique se a API está em execução.');
+        console.error('Error fetching stations:', err);
+        setError('Error loading charging stations. Please check if the API is running.');
         setStations([]); // Array vazio em caso de erro
       } finally {
         setLoading(false);
@@ -327,13 +328,13 @@ function Map() {
         const response = await fetch(`http://localhost:8080/apiV1/cars/user/${jwtToken}`);
         
         if (!response.ok) {
-          throw new Error(`Erro HTTP! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
         setCars(data);
       } catch (err) {
-        console.error('Erro ao buscar carros:', err);
+        console.error('Error fetching cars:', err);
       }
     };
 
@@ -391,9 +392,9 @@ function Map() {
   const getChargingTypeLabel = (type) => {
     switch (type) {
       case 'DC_ULTRA_FAST':
-        return 'Ultra Rápido';
+        return 'Ultra Fast';
       case 'DC_FAST':
-        return 'Rápido';
+        return 'Fast';
       case 'AC':
         return 'Normal';
       default:
@@ -428,7 +429,7 @@ function Map() {
           }}
         >
           <CircularProgress size={60} sx={{ color: '#76ff03' }} />
-          <Typography variant="h6">Carregando mapa...</Typography>
+          <Typography variant="h6">Loading map...</Typography>
         </Box>
       </ThemeProvider>
     );
@@ -469,7 +470,7 @@ function Map() {
                 color: 'white'
               }}
             >
-              {locationError} - A usar localização padrão
+              {locationError} - Using default location
             </Alert>
           )}
           
@@ -477,7 +478,6 @@ function Map() {
             center={mapCenter}
             zoom={userLocation ? 10 : 7}
             style={{ height: '100%', width: '100%' }}
-            key={`${mapCenter[0]}-${mapCenter[1]}`}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -513,7 +513,7 @@ function Map() {
                     </Typography>
                     {station.distance && (
                       <Typography variant="body2" sx={{ mb: 1, color: 'primary.main', fontWeight: 'bold' }}>
-                        📍 {station.distance.toFixed(1)} km de distância
+                        📍 {station.distance.toFixed(1)} km away
                       </Typography>
                     )}
                     <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
@@ -532,14 +532,14 @@ function Map() {
                         }}
                       />
                       <Chip
-                        label={station.available ? 'Disponível' : 'Indisponível'}
+                        label={station.available ? 'Available' : 'Unavailable'}
                         size="small"
                         color={station.available ? 'success' : 'error'}
                       />
                     </Box>
                     {station.totalPorts && (
                       <Typography variant="body2" sx={{ mb: 1 }}>
-                        Portas: {station.availablePorts}/{station.totalPorts} disponíveis
+                        Ports: {station.availablePorts}/{station.totalPorts} available
                       </Typography>
                     )}
                   </Box>
@@ -561,11 +561,11 @@ function Map() {
           {/* Cabeçalho com Pesquisa */}
           <SearchContainer>
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: 'white' }}>
-              Estações de Carregamento
+              Charging Stations
             </Typography>
             <TextField
               fullWidth
-              placeholder="Pesquisar estações..."
+              placeholder="Search stations..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
@@ -592,7 +592,7 @@ function Map() {
               size="small"
             />
             <Typography variant="body2" sx={{ mt: 2, color: '#76ff03', fontWeight: 'bold' }}>
-              {filteredAndSortedStations.length} estações encontradas
+              {filteredAndSortedStations.length} stations found
             </Typography>
           </SearchContainer>
 
@@ -629,7 +629,7 @@ function Map() {
                       {station.name}
                     </Typography>
                     <StatusChip
-                      label={station.available ? 'Disponível' : 'Indisponível'}
+                      label={station.available ? 'Available' : 'Unavailable'}
                       size="small"
                       status={station.available ? 'available' : 'unavailable'}
                     />
@@ -642,7 +642,7 @@ function Map() {
 
                   {station.distance && (
                     <Typography variant="body2" sx={{ mb: 2, color: '#76ff03', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      📍 {station.distance.toFixed(1)} km de distância
+                      📍 {station.distance.toFixed(1)} km away
                     </Typography>
                   )}
 
@@ -661,7 +661,7 @@ function Map() {
 
                   {station.totalPorts && (
                     <Typography variant="body2" sx={{ color: '#b0b0b0' }}>
-                      Portas: <span style={{ color: '#76ff03', fontWeight: 'bold' }}>{station.availablePorts}/{station.totalPorts}</span> disponíveis
+                      Ports: <span style={{ color: '#76ff03', fontWeight: 'bold' }}>{station.availablePorts}/{station.totalPorts}</span> available
                     </Typography>
                   )}
                 </CardContent>
@@ -676,7 +676,7 @@ function Map() {
                       setBookingModalOpen(true);
                     }}
                   >
-                    Reservar
+                    Book
                   </GradientButton>
                   <OutlinedButton 
                     size="small" 
@@ -688,7 +688,7 @@ function Map() {
                       window.open(url, '_blank');
                     }}
                   >
-                    Navegar
+                    Navigate
                   </OutlinedButton>
                 </CardActions>
               </StyledCard>
@@ -697,10 +697,10 @@ function Map() {
             {filteredAndSortedStations.length === 0 && !loading && (
               <Box sx={{ textAlign: 'center', p: 4 }}>
                 <Typography variant="h6" sx={{ color: '#b0b0b0', mb: 1 }}>
-                  Nenhuma estação encontrada
+                  No stations found
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#76ff03' }}>
-                  Tente ajustar os termos de pesquisa
+                  Try adjusting your search terms
                 </Typography>
               </Box>
             )}
@@ -733,18 +733,18 @@ function Map() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Paper sx={{ p: 2, backgroundColor: 'rgba(26, 26, 26, 0.8)', border: '1px solid rgba(118, 255, 3, 0.2)' }}>
                     <Typography variant="subtitle2" sx={{ color: '#b0b0b0', mb: 1 }}>
-                      Localização
+                      Location
                     </Typography>
                     <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'white' }}>
                       <LocationOn fontSize="small" sx={{ color: '#76ff03' }} />
                       {selectedStation.location}
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 1, color: '#b0b0b0' }}>
-                      Coordenadas: {selectedStation.latitude}, {selectedStation.longitude}
+                      Coordinates: {selectedStation.latitude}, {selectedStation.longitude}
                     </Typography>
                     {userLocation && selectedStation.distance && (
                       <Typography variant="body2" sx={{ mt: 1, color: '#76ff03', fontWeight: 'bold' }}>
-                        📍 {selectedStation.distance.toFixed(1)} km de distância
+                        📍 {selectedStation.distance.toFixed(1)} km away
                       </Typography>
                     )}
                   </Paper>
@@ -755,7 +755,7 @@ function Map() {
                         {selectedStation.power}
                       </Typography>
                       <Typography variant="body2" sx={{ color: '#b0b0b0' }}>
-                        kW de Potência
+                        kW Power
                       </Typography>
                     </Paper>
                     
@@ -767,17 +767,17 @@ function Map() {
                           fontWeight: 'bold'
                         }}
                       >
-                        {selectedStation.available ? 'Disponível' : 'Indisponível'}
+                        {selectedStation.available ? 'Available' : 'Unavailable'}
                       </Typography>
                       <Typography variant="body2" sx={{ color: '#b0b0b0' }}>
-                        Estado
+                        Status
                       </Typography>
                     </Paper>
                   </Box>
 
                   <Paper sx={{ p: 2, backgroundColor: 'rgba(26, 26, 26, 0.8)', border: '1px solid rgba(118, 255, 3, 0.2)' }}>
                     <Typography variant="subtitle2" sx={{ color: '#b0b0b0', mb: 1 }}>
-                      Tipo de Carregamento
+                      Charging Type
                     </Typography>
                     <TypeChip
                       label={getChargingTypeLabel(selectedStation.chargingType)}
@@ -788,14 +788,14 @@ function Map() {
                   {selectedStation.totalPorts && (
                     <Paper sx={{ p: 2, backgroundColor: 'rgba(26, 26, 26, 0.8)', border: '1px solid rgba(118, 255, 3, 0.2)' }}>
                       <Typography variant="subtitle2" sx={{ color: '#b0b0b0', mb: 1 }}>
-                        Disponibilidade de Portas
+                        Port Availability
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Typography variant="h5" sx={{ color: '#76ff03', fontWeight: 'bold' }}>
                           {selectedStation.availablePorts}
                         </Typography>
                         <Typography variant="body1" sx={{ color: 'white' }}>
-                          de {selectedStation.totalPorts} portas disponíveis
+                          of {selectedStation.totalPorts} ports available
                         </Typography>
                       </Box>
                     </Paper>
@@ -804,7 +804,7 @@ function Map() {
               </DialogContent>
               <DialogActions sx={{ backgroundColor: '#1a1a1a', borderTop: '1px solid rgba(118, 255, 3, 0.2)' }}>
                 <OutlinedButton onClick={() => setDialogOpen(false)}>
-                  Fechar
+                  Close
                 </OutlinedButton>
                 <OutlinedButton 
                   startIcon={<ElectricCar />}
@@ -812,7 +812,7 @@ function Map() {
                     setBookingModalOpen(true);
                   }}
                 >
-                  Reservar
+                  Book
                 </OutlinedButton>
                 <GradientButton 
                   startIcon={<Navigation />}
@@ -821,7 +821,7 @@ function Map() {
                     window.open(url, '_blank');
                   }}
                 >
-                  Navegar
+                  Navigate
                 </GradientButton>
               </DialogActions>
             </>

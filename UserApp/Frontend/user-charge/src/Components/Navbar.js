@@ -168,7 +168,7 @@ function Navbar() {
 
   const pages = [
     { name: 'Charger Locations', path: '/charging_locations', icon: <MapIcon /> },
-    { name: 'Book Charger', path: '/user?tab=1', icon: <PowerIcon /> }
+    { name: 'Book Charger', path: '/user?tab=0', icon: <PowerIcon /> }
   ];
 
   const drawer = (
@@ -414,7 +414,7 @@ function Navbar() {
                       }}
                     >
                       <ListItemIcon><AccountIcon fontSize="small" sx={{ color: '#76ff03' }} /></ListItemIcon>
-                      <Typography>Perfil</Typography>
+                      <Typography>Profile</Typography>
                     </MenuItem>
                     <Divider sx={{ backgroundColor: 'rgba(118, 255, 3, 0.2)' }} />
                     <MenuItem 
@@ -427,7 +427,7 @@ function Navbar() {
                       }}
                     >
                       <ListItemIcon><LogoutIcon fontSize="small" sx={{ color: '#ff5252' }} /></ListItemIcon>
-                      <Typography>Sair</Typography>
+                      <Typography>Logout</Typography>
                     </MenuItem>
                   </Menu>
                 </>
