@@ -1,4 +1,3 @@
-/*
 
 package chargercontrol.userapi.controller;
 
@@ -175,6 +174,3 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.error").value("Login failed: Database connection failed"));
     }
 }
-
-
-*/

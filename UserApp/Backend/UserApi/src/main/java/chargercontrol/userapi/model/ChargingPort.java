@@ -48,7 +48,10 @@ public class ChargingPort {
     @OneToMany(mappedBy = "chargingPort", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore // Evita lazy loading exception
     private List<BookSlot> bookSlots = new ArrayList<>();
-    
+
+    public ChargingPort(long l, Station testStation, String a02, ChargingPortStatus chargingPortStatus, double v) {
+    }
+
     @PostLoad
     @PostPersist
     @PostUpdate
