@@ -19,6 +19,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { BatteryChargingFull, Schedule, Power } from '@mui/icons-material';
+import PaymentModal from './PaymentModal'; // Ajuste o caminho conforme necessário
 
 function BookingModal({ open, onClose, station }) {
   const [startTime, setStartTime] = useState(new Date());
@@ -29,6 +30,11 @@ function BookingModal({ open, onClose, station }) {
   const [error, setError] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [apiConfig, setApiConfig] = useState(null);
+  
+  // Novos estados para pagamento
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
+  const [bookingDataPending, setBookingDataPending] = useState(null);
   
   // Estados para notificações
   const [notification, setNotification] = useState({
@@ -73,18 +79,18 @@ function BookingModal({ open, onClose, station }) {
   // Centralized API configurations (same as Cars.js)
   const API_CONFIGS = {
     users: [
-      { baseUrl: 'http://localhost:8080', path: '/apiV1/user/all' },
-      { baseUrl: 'http://localhost:3000', path: '/apiV1/user/all' },
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/user/all' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/user/all' },
       { baseUrl: '', path: '/apiV1/user/all' },
     ],
     cars: [
-      { baseUrl: 'http://localhost:8080', path: '/apiV1/cars/user' },
-      { baseUrl: 'http://localhost:3000', path: '/apiV1/cars/user' },
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/cars/user' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/cars/user' },
       { baseUrl: '', path: '/apiV1/cars/user' },
     ],
     bookings: [
-      { baseUrl: 'http://localhost:8080', path: '/apiV1/bookings' },
-      { baseUrl: 'http://localhost:3000', path: '/apiV1/bookings' },
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/bookings' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/bookings' },
       { baseUrl: '', path: '/apiV1/bookings' },
     ]
   };
@@ -253,8 +259,120 @@ function BookingModal({ open, onClose, station }) {
     }
   };
 
-  // Função para mostrar notificação de sucesso
-  const showSuccessNotification = (bookingResult, selectedCarObj) => {
+  // Função modificada para abrir modal de pagamento ao invés de criar booking diretamente
+  const handleBooking = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const userId = await getCurrentUserId();
+      
+      // Find the selected car object
+      const selectedCarObj = cars.find(car => car.id === selectedCar);
+      
+      const bookingData = {
+        userId: userId,
+        startTime: startTime.toISOString(),
+        stationId: station.id,
+        carId: selectedCarObj ? selectedCarObj.id : selectedCar,
+        duration: duration
+      };
+
+      // Preparar dados para o pagamento
+      const paymentDetails = {
+        station: station.name,
+        stationId: station.id,
+        duration: duration,
+        estimatedEnergy: formatEstimatedEnergy(),
+        startTime: startTime.toLocaleString('en-GB'),
+        car: selectedCarObj ? `${selectedCarObj.brand} ${selectedCarObj.model}` : 'N/A'
+      };
+
+      // Armazenar dados da reserva para usar após pagamento
+      setBookingDataPending({
+        bookingData,
+        selectedCarObj,
+        paymentDetails
+      });
+
+      // Abrir modal de pagamento
+      setPaymentModalOpen(true);
+      
+    } catch (err) {
+      console.error('Error preparing booking:', err);
+      setError('Failed to prepare booking. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função chamada quando pagamento é bem-sucedido
+  const handlePaymentSuccess = async (paymentResult) => {
+    console.log('Payment successful:', paymentResult);
+    
+    setPaymentModalOpen(false);
+    setLoading(true);
+    
+    try {
+      if (!bookingDataPending) {
+        throw new Error('No booking data available');
+      }
+
+      const { bookingData, selectedCarObj } = bookingDataPending;
+
+      // Adicionar informações de pagamento aos dados da reserva
+      const bookingWithPayment = {
+        ...bookingData,
+        paymentInfo: {
+          transactionId: paymentResult.transactionId,
+          amount: paymentResult.amount,
+          paymentMethod: paymentResult.paymentMethod,
+          status: paymentResult.status
+        }
+      };
+
+      console.log('Creating booking with payment info:', bookingWithPayment);
+
+      // Try different booking endpoints
+      const configsToTry = apiConfig?.bookings 
+        ? [apiConfig.bookings] 
+        : API_CONFIGS.bookings;
+
+      const { data: bookingResult, config } = await makeAPIRequest(
+        configsToTry, 
+        null, 
+        'POST', 
+        bookingWithPayment
+      );
+
+      if (!apiConfig?.bookings) {
+        setApiConfig(prev => ({ ...prev, bookings: config }));
+      }
+
+      console.log('Booking successful:', bookingResult);
+      
+      // Mostrar notificação de sucesso com informações de pagamento
+      showSuccessNotificationWithPayment(bookingResult, selectedCarObj, paymentResult);
+      
+      // Limpar dados pendentes
+      setBookingDataPending(null);
+      
+      // Fechar modal após um pequeno delay para mostrar a notificação
+      setTimeout(() => {
+        onClose();
+      }, 500);
+      
+    } catch (err) {
+      console.error('Error creating booking after payment:', err);
+      showErrorNotification(err);
+      setBookingDataPending(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para mostrar notificação de sucesso com informações de pagamento
+  const showSuccessNotificationWithPayment = (bookingResult, selectedCarObj, paymentResult) => {
     const endTime = new Date(startTime.getTime() + duration * 60000);
     const estimatedEnergy = formatEstimatedEnergy();
     
@@ -262,7 +380,7 @@ function BookingModal({ open, onClose, station }) {
       open: true,
       type: 'success',
       title: 'Booking Created Successfully!',
-      message: 'Your booking has been confirmed.',
+      message: 'Your booking and payment have been confirmed.',
       details: {
         station: station.name,
         car: `${selectedCarObj.brand} ${selectedCarObj.model}`,
@@ -272,9 +390,20 @@ function BookingModal({ open, onClose, station }) {
         duration: `${duration} minutes`,
         estimatedEnergy: estimatedEnergy,
         stationPower: `${station.power} kW`,
-        bookingId: bookingResult.id || bookingResult.bookingId || 'N/A'
+        bookingId: bookingResult.id || bookingResult.bookingId || 'N/A',
+        // Informações de pagamento
+        transactionId: paymentResult.transactionId,
+        paymentAmount: `€${paymentResult.amount}`,
+        paymentMethod: paymentResult.paymentMethod,
+        paymentStatus: paymentResult.status
       }
     });
+  };
+
+  // Função para lidar com cancelamento do pagamento
+  const handlePaymentCancel = () => {
+    setPaymentModalOpen(false);
+    setBookingDataPending(null);
   };
 
   // Função para mostrar notificação de erro
@@ -369,59 +498,6 @@ function BookingModal({ open, onClose, station }) {
       setNotification(prev => ({ ...prev, open: false }));
     }
   }, [open]);
-
-  const handleBooking = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const userId = await getCurrentUserId();
-      
-      // Find the selected car object
-      const selectedCarObj = cars.find(car => car.id === selectedCar);
-      
-      const bookingData = {
-        userId: userId,
-        startTime: startTime.toISOString(),
-        stationId: station.id,
-        carId: selectedCarObj ? selectedCarObj.id : selectedCar,
-        duration: duration
-      };
-
-      console.log('Booking data:', bookingData);
-
-      // Try different booking endpoints
-      const configsToTry = apiConfig?.bookings 
-        ? [apiConfig.bookings] 
-        : API_CONFIGS.bookings;
-
-      const { data: bookingResult, config } = await makeAPIRequest(
-        configsToTry, 
-        null, 
-        'POST', 
-        bookingData
-      );
-
-      if (!apiConfig?.bookings) {
-        setApiConfig(prev => ({ ...prev, bookings: config }));
-      }
-
-      console.log('Booking successful:', bookingResult);
-      
-      // Mostrar notificação de sucesso
-      showSuccessNotification(bookingResult, selectedCarObj);
-      
-      // Fechar modal após um pequeno delay para mostrar a notificação
-      setTimeout(() => {
-        onClose();
-      }, 500);
-      
-    } catch (err) {
-      console.error('Error creating booking:', err);
-      showErrorNotification(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Função para fechar notificação
   const handleCloseNotification = () => {
@@ -556,22 +632,31 @@ function BookingModal({ open, onClose, station }) {
             variant="contained" 
             disabled={loading || !selectedCar || cars.length === 0}
           >
-            {loading ? <CircularProgress size={24} /> : 'Book'}
+            {loading ? <CircularProgress size={24} /> : 'Book & Pay'}
           </Button>
         </DialogActions>
       </Dialog>
 
+      {/* Modal de Pagamento */}
+      <PaymentModal
+        open={paymentModalOpen}
+        onClose={handlePaymentCancel}
+        onPaymentSuccess={handlePaymentSuccess}
+        paymentDetails={bookingDataPending?.paymentDetails}
+        loading={loading}
+      />
+
       {/* Notificação de Sucesso */}
       <Snackbar
         open={notification.open && notification.type === 'success'}
-        autoHideDuration={8000}
+        autoHideDuration={10000}
         onClose={handleCloseNotification}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <Alert 
           onClose={handleCloseNotification} 
           severity="success" 
-          sx={{ width: '100%', maxWidth: 500 }}
+          sx={{ width: '100%', maxWidth: 600 }}
         >
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
             {notification.title}
@@ -605,6 +690,26 @@ function BookingModal({ open, onClose, station }) {
               <Typography variant="caption" display="block">
                 <strong>Booking ID:</strong> {notification.details.bookingId}
               </Typography>
+              {/* Informações de pagamento */}
+              {notification.details.transactionId && (
+                <>
+                  <Typography variant="caption" display="block" sx={{ mt: 1, fontWeight: 'bold' }}>
+                    Payment Details:
+                  </Typography>
+                  <Typography variant="caption" display="block">
+                    <strong>Transaction ID:</strong> {notification.details.transactionId}
+                  </Typography>
+                  <Typography variant="caption" display="block">
+                    <strong>Amount:</strong> {notification.details.paymentAmount}
+                  </Typography>
+                  <Typography variant="caption" display="block">
+                    <strong>Method:</strong> {notification.details.paymentMethod}
+                  </Typography>
+                  <Typography variant="caption" display="block">
+                    <strong>Status:</strong> {notification.details.paymentStatus}
+                  </Typography>
+                </>
+              )}
             </Box>
           )}
         </Alert>
