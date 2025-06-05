@@ -11,7 +11,7 @@ import {
   Fade,
   Zoom,
 } from '@mui/material';
-import { ElectricCar, Login, Map } from '@mui/icons-material';
+import { ElectricCar, Login, Map, Person } from '@mui/icons-material';
 import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 
 // Tema personalizado harmonizado com a navbar
@@ -107,17 +107,26 @@ const OutlineButton = styled(Button)(({ theme }) => ({
 
 function Home() {
   const [checked, setChecked] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
   React.useEffect(() => {
     setChecked(true);
     document.body.style.overflow = 'hidden';
+    setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
+    const handleStorage = () => setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
+    window.addEventListener('storage', handleStorage);
     return () => {
       document.body.style.overflow = 'unset';
+      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 
   const handleLoginClick = () => {
     window.location.href = '/login';
+  };
+
+  const handleProfileClick = () => {
+    window.location.href = '/user';
   };
 
   const handleMapClick = () => {
@@ -221,27 +230,32 @@ function Home() {
                           size="large"
                           startIcon={<Map />}
                           onClick={handleMapClick}
-                          sx={{
-                            minWidth: '220px',
-                            py: 2.5,
-                            fontSize: '1.2rem',
-                          }}
+                          sx={{ minWidth: '220px', py: 2.5, fontSize: '1.2rem' }}
                         >
                           Explore Map
                         </NeonButton>
-                        <OutlineButton
-                          variant="outlined"
-                          size="large"
-                          startIcon={<Login />}
-                          onClick={handleLoginClick}
-                          sx={{
-                            minWidth: '170px',
-                            py: 2.5,
-                            fontSize: '1.2rem',
-                          }}
-                        >
-                          Login
-                        </OutlineButton>
+                        {!isLoggedIn && (
+                          <OutlineButton
+                            variant="outlined"
+                            size="large"
+                            startIcon={<Login />}
+                            onClick={handleLoginClick}
+                            sx={{ minWidth: '170px', py: 2.5, fontSize: '1.2rem' }}
+                          >
+                            Login
+                          </OutlineButton>
+                        )}
+                        {isLoggedIn && (
+                          <OutlineButton
+                            variant="outlined"
+                            size="large"
+                            startIcon={<Person sx={{ color: '#76ff03' }} />}
+                            onClick={handleProfileClick}
+                            sx={{ minWidth: '170px', py: 2.5, fontSize: '1.2rem' }}
+                          >
+                            Profile
+                          </OutlineButton>
+                        )}
                       </Box>
                     </Box>
                   </Fade>

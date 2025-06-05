@@ -35,6 +35,8 @@ import {
 import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import Cars from './Cars';
 
+import ChargerInformation from './ChargerInformation';
+
 // Tema harmonizado com navbar e home
 const darkTheme = createTheme({
   palette: {
@@ -183,8 +185,14 @@ function TabPanel(props) {
   );
 }
 
+function getTabFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const tab = parseInt(params.get('tab'), 10);
+  return isNaN(tab) ? 0 : tab;
+}
+
 function UserProfile() {
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(getTabFromUrl());
   const [editMode, setEditMode] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   
@@ -215,6 +223,15 @@ function UserProfile() {
         name: userName
       }));
     }
+  }, []);
+
+  useEffect(() => {
+    // Atualiza a aba se o parâmetro da URL mudar (ex: navegação interna)
+    const onPopState = () => {
+      setTabValue(getTabFromUrl());
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   const handleTabChange = (event, newValue) => {
@@ -483,42 +500,8 @@ function UserProfile() {
 
               {/* Charger Information Tab */}
               <TabPanel value={tabValue} index={1}>
-                <Box sx={{ p: 4, textAlign: 'center', py: 8 }}>
-                  <Box
-                    sx={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: '50%',
-                      background: 'linear-gradient(45deg, rgba(118, 255, 3, 0.2), rgba(118, 255, 3, 0.1))',
-                      border: '2px solid rgba(118, 255, 3, 0.3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mx: 'auto',
-                      mb: 3,
-                      boxShadow: '0 0 30px rgba(118, 255, 3, 0.2)',
-                    }}
-                  >
-                    <SettingsIcon sx={{ fontSize: 48, color: '#76ff03' }} />
-                  </Box>
-                  <Typography 
-                    variant="h5" 
-                    fontWeight="600" 
-                    gutterBottom
-                    sx={{ color: 'white' }}
-                  >
-                    Charger Information
-                  </Typography>
-                  <Typography 
-                    variant="body1" 
-                    sx={{ 
-                      maxWidth: 400, 
-                      mx: 'auto',
-                      color: 'rgba(255, 255, 255, 0.7)'
-                    }}
-                  >
-                    This section will contain information about your registered chargers.
-                  </Typography>
+                <Box sx={{ p: 4 }}>
+                  <ChargerInformation />
                 </Box>
               </TabPanel>
 

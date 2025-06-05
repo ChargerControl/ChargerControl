@@ -2,7 +2,6 @@ package chargercontrol.userapi.model;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +19,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "charging_ports")
 public class ChargingPort {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,28 +36,19 @@ public class ChargingPort {
     
     @Column(nullable = false)
     @PositiveOrZero(message = "Energy used must be zero or positive")
-    private Double energyUsed = 0.0; // Default to 0.0 kWh
+    private Double energyUsed = 0.0;
     
     @Column(nullable = false)
     @NotBlank(message = "Port identifier cannot be blank")
-    private String portIdentifier; // e.g., "Port 1", "A01"
+    private String portIdentifier;
     
-    // Campo adicional para referenciar o ID da station (útil para serialização)
     @Transient
     private Long stationId;
-
-    @OneToMany(mappedBy = "chargingPort", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookSlot> bookSlots = new ArrayList<>();
-
-    public List<BookSlot> getBookSlots() {
-    return bookSlots;
-    }
-
-    public void setBookSlots(List<BookSlot> bookSlots) {
-        this.bookSlots = bookSlots;
-    }
     
-    // Método para popular o stationId quando necessário
+    @OneToMany(mappedBy = "chargingPort", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Evita lazy loading exception
+    private List<BookSlot> bookSlots = new ArrayList<>();
+    
     @PostLoad
     @PostPersist
     @PostUpdate
