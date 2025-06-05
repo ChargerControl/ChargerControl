@@ -11,11 +11,14 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
-  Typography
+  Typography,
+  Paper,
+  Chip
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { BatteryChargingFull, Schedule, Power } from '@mui/icons-material';
 
 function BookingModal({ open, onClose, station }) {
   const [startTime, setStartTime] = useState(new Date());
@@ -35,6 +38,37 @@ function BookingModal({ open, onClose, station }) {
     message: '',
     details: null
   });
+
+  // Função para calcular energia estimada
+  const calculateEstimatedEnergy = () => {
+    if (!station || !station.power || !duration) return 0;
+    
+    // Converter minutos para horas e calcular energia
+    const hours = duration / 60;
+    const estimatedEnergy = station.power * hours;
+    
+    return estimatedEnergy;
+  };
+
+  // Função para formatar a energia estimada
+  const formatEstimatedEnergy = () => {
+    const energy = calculateEstimatedEnergy();
+    
+    if (energy === 0) return '0 kWh';
+    
+    // Se for menos de 1 kWh, mostrar em Wh
+    if (energy < 1) {
+      return `${(energy * 1000).toFixed(0)} Wh`;
+    }
+    
+    // Se for número inteiro, não mostrar casas decimais
+    if (energy % 1 === 0) {
+      return `${energy.toFixed(0)} kWh`;
+    }
+    
+    // Caso contrário, mostrar até 2 casas decimais
+    return `${energy.toFixed(2)} kWh`;
+  };
 
   // Centralized API configurations (same as Cars.js)
   const API_CONFIGS = {
@@ -222,6 +256,7 @@ function BookingModal({ open, onClose, station }) {
   // Função para mostrar notificação de sucesso
   const showSuccessNotification = (bookingResult, selectedCarObj) => {
     const endTime = new Date(startTime.getTime() + duration * 60000);
+    const estimatedEnergy = formatEstimatedEnergy();
     
     setNotification({
       open: true,
@@ -235,6 +270,8 @@ function BookingModal({ open, onClose, station }) {
         startTime: startTime.toLocaleString('pt-PT'),
         endTime: endTime.toLocaleString('pt-PT'),
         duration: `${duration} minutos`,
+        estimatedEnergy: estimatedEnergy,
+        stationPower: `${station.power} kW`,
         bookingId: bookingResult.id || bookingResult.bookingId || 'N/A'
       }
     });
@@ -400,23 +437,105 @@ function BookingModal({ open, onClose, station }) {
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Book Charging Station: {station?.name}</DialogTitle>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            Book Charging Station: {station?.name}
+          </Box>
+        </DialogTitle>
         <DialogContent>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              {/* Informações da Estação */}
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  backgroundColor: 'rgba(118, 255, 3, 0.1)', 
+                  border: '1px solid rgba(118, 255, 3, 0.3)',
+                  borderRadius: 2
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
+                  Informações da Estação
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Chip 
+                    icon={<Power />}
+                    label={`${station?.power || 0} kW`}
+                    color="primary"
+                    size="small"
+                  />
+                  <Chip 
+                    label={station?.chargingType || 'N/A'}
+                    color="secondary"
+                    size="small"
+                  />
+                  <Chip 
+                    label={station?.available ? 'Disponível' : 'Indisponível'}
+                    color={station?.available ? 'success' : 'error'}
+                    size="small"
+                  />
+                </Box>
+              </Paper>
+
               <DateTimePicker
                 label="Start Time"
                 value={startTime}
                 onChange={(newValue) => setStartTime(newValue)}
                 renderInput={(params) => <TextField {...params} fullWidth />}
               />
-              <TextField
-                label="Duration (minutes)"
-                type="number"
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-                fullWidth
-              />
+
+              {/* Duration com estimativa de energia */}
+              <Box>
+                <TextField
+                  label="Duration (minutes)"
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(Number(e.target.value))}
+                  fullWidth
+                  inputProps={{ min: 1, max: 1440 }} // Max 24 horas
+                />
+                
+                {/* Estimativa de energia */}
+                <Paper 
+                  sx={{ 
+                    mt: 1, 
+                    p: 2, 
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)', 
+                    border: '1px solid rgba(33, 150, 243, 0.3)',
+                    borderRadius: 2
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <BatteryChargingFull color="primary" />
+                    <Typography variant="subtitle2" color="primary">
+                      Estimativa de Energia
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box>
+                      <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                        {formatEstimatedEnergy()}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Energia estimada
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Schedule fontSize="small" color="action" />
+                      <Typography variant="body2" color="text.secondary">
+                        {duration} min × {station?.power || 0} kW
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    * Estimativa baseada na potência máxima da estação. O consumo real pode variar.
+                  </Typography>
+                </Paper>
+              </Box>
+
               <TextField
                 select
                 label="Select Car"
@@ -431,6 +550,7 @@ function BookingModal({ open, onClose, station }) {
                   </MenuItem>
                 ))}
               </TextField>
+              
               {cars.length === 0 && !loading && (
                 <Alert severity="info">
                   No cars found. Please add a vehicle first.
@@ -486,6 +606,12 @@ function BookingModal({ open, onClose, station }) {
               </Typography>
               <Typography variant="caption" display="block">
                 <strong>Duração:</strong> {notification.details.duration}
+              </Typography>
+              <Typography variant="caption" display="block">
+                <strong>Potência:</strong> {notification.details.stationPower}
+              </Typography>
+              <Typography variant="caption" display="block">
+                <strong>Energia Estimada:</strong> {notification.details.estimatedEnergy}
               </Typography>
               <Typography variant="caption" display="block">
                 <strong>ID da Reserva:</strong> {notification.details.bookingId}
