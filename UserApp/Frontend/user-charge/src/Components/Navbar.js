@@ -168,7 +168,7 @@ function Navbar() {
 
   const pages = [
     { name: 'Charger Locations', path: '/charging_locations', icon: <MapIcon /> },
-    { name: 'Book Charger', path: '/charging_booking', icon: <PowerIcon /> }
+    { name: 'Book Charger', path: '/user?tab=1', icon: <PowerIcon /> }
   ];
 
   const drawer = (
@@ -283,23 +283,7 @@ function Navbar() {
                 transition: 'all 0.3s ease'
               }}
             >
-              <ListItemIcon sx={{ color: '#76ff03' }}><SettingsIcon /></ListItemIcon>
-              <ListItemText primary="Definições" sx={{ color: 'white' }} />
-            </ListItem>
-            <ListItem 
-              button 
-              onClick={handleLogout}
-              sx={{
-                mx: 2,
-                mb: 1,
-                borderRadius: 2,
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 82, 82, 0.1)',
-                  transform: 'translateX(10px)',
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
+              
               <ListItemIcon sx={{ color: '#ff5252' }}><LogoutIcon /></ListItemIcon>
               <ListItemText primary="Sair" sx={{ color: '#ff5252' }} />
             </ListItem>
@@ -431,18 +415,6 @@ function Navbar() {
                     >
                       <ListItemIcon><AccountIcon fontSize="small" sx={{ color: '#76ff03' }} /></ListItemIcon>
                       <Typography>Perfil</Typography>
-                    </MenuItem>
-                    <MenuItem 
-                      onClick={() => handleNavigation('/settings')}
-                      sx={{ 
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: 'rgba(118, 255, 3, 0.1)',
-                        }
-                      }}
-                    >
-                      <ListItemIcon><SettingsIcon fontSize="small" sx={{ color: '#76ff03' }} /></ListItemIcon>
-                      <Typography>Definições</Typography>
                     </MenuItem>
                     <Divider sx={{ backgroundColor: 'rgba(118, 255, 3, 0.2)' }} />
                     <MenuItem 

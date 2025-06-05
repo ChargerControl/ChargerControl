@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,20 +96,51 @@ public class BookSlotController {
     }
 
     @PutMapping("/{id}/status")
-    @Operation(summary = "Update booking status", responses = {
-            @ApiResponse(responseCode = "200", description = "Booking status updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookSlot.class))),
-            @ApiResponse(responseCode = "404", description = "Booking not found")
-    })
-    public ResponseEntity<BookSlot> updateBookingStatus(
-            @Parameter(description = "ID of the booking to update") @PathVariable Long id,
-            @Parameter(description = "New status for the booking") @RequestBody BookingStatus status) {
-        try {
-            BookSlot updatedBooking = bookSlotService.updateBookingStatus(id, status);
-            return ResponseEntity.ok(updatedBooking);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+@Operation(summary = "Update booking status", responses = {
+        @ApiResponse(responseCode = "200", description = "Booking status updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookSlot.class))),
+        @ApiResponse(responseCode = "404", description = "Booking not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid status or operation not allowed")
+})
+public ResponseEntity<BookSlot> updateBookingStatus(
+        @Parameter(description = "ID of the booking to update") @PathVariable Long id,
+        @Parameter(description = "New status for the booking") @RequestBody BookingStatusRequest statusRequest) {
+    try {
+        logger.info("Attempting to update booking {} to status {}", id, statusRequest.getStatus());
+        
+        BookSlot updatedBooking = bookSlotService.updateBookingStatus(id, statusRequest.getStatus());
+        
+        logger.info("Successfully updated booking {} to status {}", id, updatedBooking.getStatus());
+        return ResponseEntity.ok(updatedBooking);
+        
+    } catch (EntityNotFoundException e) {
+        logger.error("Booking not found with id: {}", id);
+        return ResponseEntity.notFound().build();
+        
+    } catch (RuntimeException e) {
+        logger.error("Failed to update booking status: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
+}
+
+// Classe auxiliar para receber o status no request body
+public static class BookingStatusRequest {
+    @NotNull(message = "Status cannot be null")
+    private BookingStatus status;
+    
+    public BookingStatusRequest() {}
+    
+    public BookingStatusRequest(BookingStatus status) {
+        this.status = status;
+    }
+    
+    public BookingStatus getStatus() {
+        return status;
+    }
+    
+    public void setStatus(BookingStatus status) {
+        this.status = status;
+    }
+}
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Cancel a booking", responses = {
