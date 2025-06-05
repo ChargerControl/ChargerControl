@@ -93,7 +93,7 @@ function Login() {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8080/apiV1/user/login", {
+      const response = await fetch("http://192.168.160.7:8080/apiV1/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

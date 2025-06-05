@@ -94,7 +94,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/apiV1/user/register", {
+      const response = await fetch("http://192.168.160.7:8080/apiV1/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
