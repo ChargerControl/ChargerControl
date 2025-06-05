@@ -149,7 +149,7 @@ function PaymentModal({
 
       console.log('Processing payment:', paymentPayload);
 
-      const response = await fetch('http://localhost:8089/api/payment/process', {
+      const response = await fetch('http://192.168.160.7:8089/api/payment/process', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
