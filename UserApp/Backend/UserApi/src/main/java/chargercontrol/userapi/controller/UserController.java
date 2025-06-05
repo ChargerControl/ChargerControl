@@ -1,5 +1,8 @@
+
+
 package chargercontrol.userapi.controller;
 
+import chargercontrol.userapi.dto.UserDTO;
 import chargercontrol.userapi.jwt.JwtUtil;
 import chargercontrol.userapi.model.AuthRequest;
 import chargercontrol.userapi.model.AuthResponse;
@@ -13,13 +16,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController // Changed from @Service to @RestController for Spring Web to recognize it as a
                 // controller
@@ -60,7 +66,9 @@ public class UserController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             // Check if email already exists
-            if (userRepository.findByEmail(registerRequest.getEmail()) != null) {
+
+            if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new AuthResponse(null, "Email already in use"));
             }
@@ -80,6 +88,32 @@ public class UserController {
         }
     }
 
+    // Método atualizado no UserController
+    @GetMapping("/all")
+    @Operation(summary = "Get all users", 
+            description = "Retrieve a list of all registered users",
+            responses = {
+                @ApiResponse(responseCode = "200", 
+                            description = "Successfully retrieved all users",
+                            content = @Content(mediaType = "application/json",
+                                            schema = @Schema(implementation = UserDTO.class))),
+                @ApiResponse(responseCode = "500", 
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json"))
+            })
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        try {
+            List<User> users = userService.getAllUsers();
+            List<UserDTO> userDTOs = users.stream()
+                    .map(UserDTO::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(userDTOs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ArrayList<>());
+        }
+    }
+
     @PostMapping("/login")
     @Operation(summary = "Login an existing user", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User credentials for login", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRequest.class))), responses = {
             @ApiResponse(responseCode = "200", description = "Login successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))),
@@ -90,20 +124,21 @@ public class UserController {
         try {
             User user = userService.getUserByEmail(authenticationRequest.getEmail());
 
-            if (user == null) {
+            if (user == null || !passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new AuthResponse(null, "Invalid email or password"));
             }
 
-            if (!passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword())) {
+            String jwt = jwtUtil.generateToken(user.getEmail());
+            return ResponseEntity.ok(new AuthResponse(jwt, null));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("User not found")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new AuthResponse(null, "Invalid email or password"));
             }
-            String jwt = jwtUtil.generateToken(user.getEmail());
-            return ResponseEntity.ok(new AuthResponse(jwt, null));
-        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new AuthResponse(null, "Login failed: " + e.getMessage()));
         }
     }
 }
+

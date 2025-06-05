@@ -10,49 +10,316 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Card,
+  CardContent,
+  CardMedia,
+  Chip,
+  Divider,
+  Stack,
+  Avatar,
+  CircularProgress,
+  Alert,
+  Collapse
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
-  DirectionsCar as DirectionsCarIcon
+  DirectionsCar as DirectionsCarIcon,
+  Speed as SpeedIcon,
+  Battery80 as BatteryIcon,
+  ElectricCar as ElectricCarIcon,
+  CalendarToday as CalendarIcon,
+  BugReport as BugReportIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
 
-
-
 function Cars() {
-
   const [addCarDialogOpen, setAddCarDialogOpen] = useState(false);
   const [editCarIndex, setEditCarIndex] = useState(null);
-  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
+  const [showDebug, setShowDebug] = useState(false);
+  const [apiConfig, setApiConfig] = useState(null);
 
-
-  // Vehicle data 
-  const [vehicles, setVehicles] = useState([
-    { id: 1, make: 'Tesla', model: 'Model 3', year: 2022, licensePlate: 'AA-11-BB', batteryCapacity: '82 kWh', chargingType: 'Tipo 2, CCS' },
-    { id: 2, make: 'Renault', model: 'Zoe', year: 2021, licensePlate: 'ZZ-22-YY', batteryCapacity: '52 kWh', chargingType: 'Tipo 2' }
-  ]);
+  // Vehicle data from API
+  const [vehicles, setVehicles] = useState([]);
   
   // New car state
   const [newCar, setNewCar] = useState({
-    make: '',
     model: '',
-    year: new Date().getFullYear(),
-    licensePlate: '',
-    batteryCapacity: '',
-    chargingType: ''
+    brand: '',
+    maximumCharge: '',
+    carClass: ''
   });
 
-  
+  // Centralized API configurations
+  const API_CONFIGS = {
+    users: [
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/user/all' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/user/all' },
+      { baseUrl: '', path: '/apiV1/user/all' },
+      { baseUrl: '', path: '/api/v1/user/all' },
+      { baseUrl: '', path: '/api/user/all' }
+    ],
+    cars: [
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/cars/user' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/cars/user' },
+      { baseUrl: '', path: '/apiV1/cars/user' },
+      { baseUrl: '', path: '/api/v1/cars/user' },
+      { baseUrl: '', path: '/api/cars/user' }
+    ],
+    carsCreate: [
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/cars/user' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/cars/user' },
+      { baseUrl: '', path: '/apiV1/cars/user' },
+      { baseUrl: '', path: '/api/v1/cars/user' },
+      { baseUrl: '', path: '/api/cars/user' }
+    ],
+    carsBase: [
+      { baseUrl: 'http://192.168.160.7:8080', path: '/apiV1/cars' },
+      { baseUrl: 'http://192.168.160.7:3000', path: '/apiV1/cars' },
+      { baseUrl: '', path: '/apiV1/cars' },
+      { baseUrl: '', path: '/api/v1/cars' },
+      { baseUrl: '', path: '/api/cars' }
+    ]
+  };
+
+  // Default car image for all vehicles
+  const DEFAULT_CAR_IMAGE = 'https://www.shutterstock.com/image-vector/car-logo-icon-emblem-design-600nw-473088025.jpg';
+
+  // Function to decode JWT token
+  const decodeJWT = (token) => {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
+
+  // Function to get token from localStorage
+  const getAuthToken = () => {
+    const tokenKeys = ['token', 'authToken', 'accessToken', 'jwt', 'jwtToken'];
+    
+    for (const key of tokenKeys) {
+      const token = localStorage.getItem(key);
+      if (token) return token;
+    }
+    
+    throw new Error('Authentication token not found');
+  };
+
+  // Function to make HTTP requests with automatic retry
+  const makeAPIRequest = async (configs, userId = null, method = 'GET', body = null) => {
+    const token = getAuthToken();
+    
+    for (const config of configs) {
+      try {
+        const url = userId 
+          ? `${config.baseUrl}${config.path}/${userId}`
+          : `${config.baseUrl}${config.path}`;
+        
+        const requestOptions = {
+          method,
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        };
+
+        if (body && (method === 'POST' || method === 'PUT')) {
+          requestOptions.body = JSON.stringify(body);
+        }
+        
+        console.log(`Trying ${method} request to:`, url);
+        if (body) {
+          console.log('Request body:', JSON.stringify(body, null, 2));
+        }
+        
+        const response = await fetch(url, requestOptions);
+        
+        console.log('Response status:', response.status);
+
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            return { data, config, url };
+          } else if (method === 'DELETE') {
+            return { data: null, config, url };
+          }
+        } else {
+          // Log error details
+          const errorText = await response.text();
+          console.error(`HTTP ${response.status}: ${errorText}`);
+        }
+      } catch (error) {
+        console.log(`Error testing ${config.baseUrl}${config.path}:`, error.message);
+      }
+    }
+    
+    throw new Error('No valid URL found for the API');
+  };
+
+  // Function to get user ID
+  const getCurrentUserId = async () => {
+    if (currentUserId) {
+      return currentUserId;
+    }
+
+    try {
+      const token = getAuthToken();
+      const decoded = decodeJWT(token);
+      
+      if (!decoded) {
+        throw new Error('Invalid token - could not decode');
+      }
+
+      const userEmail = decoded.sub || decoded.email || decoded.username || decoded.user;
+      
+      if (!userEmail) {
+        throw new Error('Email not found in token');
+      }
+
+      const { data: users, config } = await makeAPIRequest(API_CONFIGS.users);
+      
+      setApiConfig(prev => ({ ...prev, users: config }));
+      
+      const currentUser = users.find(user => 
+        user.email === userEmail || 
+        user.username === userEmail ||
+        user.sub === userEmail
+      );
+      
+      if (!currentUser) {
+        throw new Error('User not found in list');
+      }
+
+      console.log('User ID found:', currentUser.id);
+      setCurrentUserId(currentUser.id);
+      return currentUser.id;
+      
+    } catch (error) {
+      console.error('Error getting user ID:', error);
+      throw error;
+    }
+  };
+
+  // Function to fetch cars
+  const fetchCars = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const userId = await getCurrentUserId();
+      
+      const configsToTry = apiConfig?.cars 
+        ? [apiConfig.cars] 
+        : API_CONFIGS.cars;
+      
+      const { data: carsData, config } = await makeAPIRequest(configsToTry, userId);
+      
+      if (!apiConfig?.cars) {
+        setApiConfig(prev => ({ ...prev, cars: config }));
+      }
+      
+      setVehicles(Array.isArray(carsData) ? carsData : [carsData]);
+      
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching cars:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to add/edit car
+  const handleAddCar = async () => {
+    try {
+      const userId = await getCurrentUserId();
+      
+      const isEdit = editCarIndex !== null;
+      
+      // Prepare the car data
+      const carData = {
+        model: newCar.model,
+        brand: newCar.brand,
+        maximumCharge: parseInt(newCar.maximumCharge),
+        carClass: newCar.carClass
+      };
+      
+      console.log('Car data to send:', carData);
+      console.log('User ID:', userId);
+      
+      if (isEdit) {
+        // For editing, use the specific car endpoint
+        const carId = vehicles[editCarIndex].id;
+        await makeAPIRequest(API_CONFIGS.carsBase, carId, 'PUT', carData);
+      } else {
+        // For creating, use POST /apiV1/cars/user/{userId}
+        const configsToTry = apiConfig?.carsCreate 
+          ? [apiConfig.carsCreate] 
+          : API_CONFIGS.carsCreate;
+        
+        const result = await makeAPIRequest(configsToTry, userId, 'POST', carData);
+        
+        // Save the working configuration
+        if (!apiConfig?.carsCreate) {
+          setApiConfig(prev => ({ ...prev, carsCreate: result.config }));
+        }
+      }
+      
+      await fetchCars(); // Re-fetch data
+      setAddCarDialogOpen(false);
+      
+      // Reset form
+      setNewCar({
+        model: '',
+        brand: '',
+        maximumCharge: '',
+        carClass: ''
+      });
+      setEditCarIndex(null);
+      
+    } catch (err) {
+      console.error('Error saving car:', err);
+      setError(`Error saving car: ${err.message}`);
+    }
+  };
+
+  // Function to delete car
+  const handleDeleteCar = async (id) => {
+    try {
+      const baseConfig = apiConfig?.carsBase || API_CONFIGS.carsBase[0];
+      
+      await makeAPIRequest([baseConfig], id, 'DELETE');
+      await fetchCars();
+      
+    } catch (err) {
+      console.error('Error deleting car:', err);
+      setError(err.message);
+    }
+  };
+
+  // Load cars when component mounts
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
   const handleAddCarDialogOpen = () => {
     setNewCar({
-      make: '',
       model: '',
-      year: new Date().getFullYear(),
-      licensePlate: '',
-      batteryCapacity: '',
-      chargingType: ''
+      brand: '',
+      maximumCharge: '',
+      carClass: ''
     });
     setEditCarIndex(null);
     setAddCarDialogOpen(true);
@@ -70,265 +337,432 @@ function Cars() {
     });
   };
   
-  const handleAddCar = () => {
-    if (editCarIndex !== null) {
-      // Edit existing car
-      const updatedVehicles = [...vehicles];
-      updatedVehicles[editCarIndex] = { 
-        ...newCar, 
-        id: vehicles[editCarIndex].id 
-      };
-      setVehicles(updatedVehicles);
- 
-    } else {
-      // Add new car
-      const newId = vehicles.length > 0 ? Math.max(...vehicles.map(v => v.id)) + 1 : 1;
-      setVehicles([...vehicles, { ...newCar, id: newId }]);
-
-    }
-    
-    setAddCarDialogOpen(false);
-    
-    // Auto-dismiss success message after 3 seconds
-    setTimeout(() => {
-
-    }, 3000);
-  };
-  
   const handleEditCar = (index) => {
-    setNewCar({...vehicles[index]});
+    const car = vehicles[index];
+    setNewCar({
+      model: car.model,
+      brand: car.brand,
+      maximumCharge: car.maximumCharge.toString(),
+      carClass: car.carClass
+    });
     setEditCarIndex(index);
     setAddCarDialogOpen(true);
   };
-  
-  const handleDeleteCar = (id) => {
-    setVehicles(vehicles.filter(vehicle => vehicle.id !== id));
+
+  const getCarBrandColor = (brand) => {
+    const colors = {
+      'Tesla': '#DC143C',
+      'Renault': '#FFD700',
+      'BMW': '#0066CC',
+      'Audi': '#BB0000',
+      'Mercedes': '#000000',
+      'Volkswagen': '#1E3A8A',
+    };
+    return colors[brand] || '#1976d2';
   };
 
-    const car = require("../../Images/car.png");
+  const getCarClassLabel = (carClass) => {
+    const labels = {
+      'LUXURY': 'Luxury',
+      'SPORT': 'Sport',
+      'FAMILY': 'Family',
+      'COMPACT': 'Compact',
+      'SUV': 'SUV'
+    };
+    return labels[carClass] || carClass;
+  };
 
+  // Loading state
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
+    <Box>
+      {/* Error Alert */}
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }} 
+          onClose={() => setError(null)}
+        >
+          {error}
+        </Alert>
+      )}
 
-       <Box>
-            <Grid container spacing={3}>
-              
-              
-              {vehicles.length === 0 ? (
-                <Grid item xs={12} sx={{ textAlign: 'center', py: 5 }}>
-                  <DirectionsCarIcon sx={{ fontSize: 60, color: 'text.secondary', opacity: 0.3, mb: 2 }} />
-                  <Typography variant="h6" color="text.secondary">
-                    Nenhum veículo registado
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Adicione o seu primeiro veículo elétrico para começar
-                  </Typography>
-                </Grid>
-              ) : (
-                vehicles.map((vehicle, index) => (
-                  <Grid item xs={1} key={vehicle.id}>
-  <Paper
-    elevation={26}
-    sx={{
-      ml:2,
-      minWidth:700,
-      p: 5,
-      borderRadius: 5,
-      backgroundColor: 'white',
-      position: 'relative',
-      overflow: 'hidden',
-      mb: 1,
-    }}
-  >
- 
-   
-      <Box
-        sx={{
-          width: '100%',
-          height: 200,
-          mb: 2,
-          borderRadius: 1,
-          overflow: 'hidden',
-          backgroundColor: '#f5f5f5',
+      <Box 
+        sx={{ 
+          textAlign: 'center', 
+          mb: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
         }}
       >
-        <img
-          src={car}
-          alt={`${vehicle.make} ${vehicle.model}`}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
+        <Typography variant="h5" fontWeight="600" gutterBottom>
+          My Vehicles
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Manage your electric vehicles and their details
+        </Typography>
+        <Button 
+          variant="contained" 
+          onClick={handleAddCarDialogOpen}
+          startIcon={<AddIcon />}
+          sx={{ 
+            borderRadius: 3,
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            py: 1.5,
+            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+            '&:hover': {
+              boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+            }
           }}
-        />
+        >
+          Add Vehicle
+        </Button>
       </Box>
-  
-    <Grid container spacing={2} sx={{dispaly:'flex'}}>
-      <Grid item xs={12} sm={6} md={3} sx={{dispaly:'flex',minWidth:100}}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Model
-        </Typography>
-        <Typography variant="body1" fontWeight="medium">
-          {vehicle.make} {vehicle.model}
-        </Typography>
-      </Grid>
 
-      <Grid item xs={12} sm={6} md={3} sx={{dispaly:'flex',minWidth:100}}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Year
-        </Typography>
-        <Typography variant="body1">{vehicle.year}</Typography>
-      </Grid>
-
-      <Grid item xs={12} sm={6} md={3} sx={{dispaly:'flex',minWidth:100}}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Licence Plate
-        </Typography>
-        <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
-          {vehicle.licensePlate}
-        </Typography>
-      </Grid>
-
-      <Grid item xs={12} sm={6} md={3} sx={{dispaly:'flex',minWidth:100}}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Batery Capacity
-        </Typography>
-        <Typography variant="body1">{vehicle.batteryCapacity}</Typography>
-      </Grid>
-
-      <Grid item xs={12} sm={6} md={3} sx={{dispaly:'flex',minWidth:100}}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          class
-        </Typography>
-        <Typography variant="body1">{vehicle.chargingType}</Typography>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3} sx={{dispaly:'flex',minWidth:100,mt:1}}>
-        <IconButton size="small" onClick={() => handleEditCar(index)} sx={{ mr: 1 }}>
-        <EditIcon fontSize="small" />
-      </IconButton>
-      <IconButton size="small" onClick={() => handleDeleteCar(vehicle.id)} color="error">
-        <DeleteIcon fontSize="small" />
-      </IconButton>
-      </Grid>
-    </Grid>
-  </Paper>
-  
-</Grid>
-
-
-                ))
-              )}
-              
-            </Grid>
+      {/* Vehicles Grid */}
+      {vehicles.length === 0 ? (
+        <Card 
+          sx={{ 
+            textAlign: 'center', 
+            py: 8,
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            border: 'none'
+          }}
+        >
+          <CardContent>
+            <Box
+              sx={{
+                width: 120,
+                height: 120,
+                borderRadius: '50%',
+                bgcolor: 'rgba(25, 118, 210, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 3
+              }}
+            >
+              <DirectionsCarIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+            </Box>
+            <Typography variant="h6" fontWeight="600" gutterBottom>
+              No vehicles registered
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Add your first electric vehicle to get started
+            </Typography>
             <Button 
-                  variant="contained" 
-                  onClick={handleAddCarDialogOpen}
-                  startIcon={<AddIcon />}
-                  sx={{ 
-                    textTransform: 'none',
-                    fontWeight: 'bold',
-                    mt:10
+              variant="contained" 
+              onClick={handleAddCarDialogOpen}
+              startIcon={<AddIcon />}
+              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+            >
+              Add First Vehicle
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Grid container spacing={3} justifyContent="center"> 
+          {vehicles.map((vehicle, index) => (
+            <Grid item xs={12} lg={6} key={vehicle.id}>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
+                    borderColor: 'primary.main'
+                  }
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={DEFAULT_CAR_IMAGE}
+                  alt="Electric Vehicle"
+                  sx={{
+                    objectFit: 'cover',
+                    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
                   }}
-                >
-                  Add Car
-                </Button>
-            
-            {/* Add/Edit Car Dialog */}
-            <Dialog open={addCarDialogOpen} onClose={handleAddCarDialogClose} maxWidth="sm" fullWidth>
-              <DialogTitle>
-                {editCarIndex !== null ? 'Editar Veículo' : 'Adicionar Novo Veículo'}
-              </DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                  
-                  
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Model"
-                      name="model"
-                      value={newCar.model}
-                      onChange={handleCarInputChange}
-                      fullWidth
-                      required
-                      variant="outlined"
-                      margin="dense"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Year"
-                      name="year"
-                      type="number"
-                      value={newCar.year}
-                      onChange={handleCarInputChange}
-                      fullWidth
-                      required
-                      variant="outlined"
-                      margin="dense"
-                      InputProps={{
-                        inputProps: { min: 2000, max: new Date().getFullYear() + 1 }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="licensePlate"
-                      name="licensePlate"
-                      value={newCar.licensePlate}
-                      onChange={handleCarInputChange}
-                      fullWidth
-                      required
-                      variant="outlined"
-                      margin="dense"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="batteryCapacity"
-                      name="batteryCapacity"
-                      value={newCar.batteryCapacity}
-                      onChange={handleCarInputChange}
-                      fullWidth
-                      required
-                      variant="outlined"
-                      margin="dense"
-                      placeholder="Ex: 52 kWh"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="class"
-                      name="class"
-                      value={newCar.class}
-                      onChange={handleCarInputChange}
-                      fullWidth
-                      required
-                      variant="outlined"
-                      margin="dense"
-                      placeholder="Ex: Tipo 2, CCS"
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={handleAddCarDialogClose} color="inherit">
-                  cancel
-                </Button>
-                <Button 
-                  onClick={handleAddCar} 
-                  variant="contained"
-                  sx={{ 
-                    textTransform: 'none',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  {editCarIndex !== null ? 'Update' : 'Add'}
-                </Button>
-              </DialogActions>
-            </Dialog>
-      </Box>
+                />
 
-        
+                <Chip
+                  label={vehicle.brand}
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                    bgcolor: getCarBrandColor(vehicle.brand),
+                    color: 'white',
+                    fontWeight: 600,
+                    '& .MuiChip-label': {
+                      px: 2
+                    }
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    display: 'flex',
+                    gap: 1
+                  }}
+                >
+                  <IconButton
+                    size="small"
+                    onClick={() => handleEditCar(index)}
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.9)',
+                      backdropFilter: 'blur(8px)',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 1)',
+                        color: 'primary.main'
+                      }
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDeleteCar(vehicle.id)}
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.9)',
+                      backdropFilter: 'blur(8px)',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 1)',
+                        color: 'error.main'
+                      }
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" fontWeight="700" gutterBottom>
+                    {vehicle.brand} {vehicle.model}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Owner: {vehicle.ownerName || 'N/A'}
+                  </Typography>
+
+                  <Divider sx={{ my: 2 }} />
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: '#4caf50',
+                            width: 32,
+                            height: 32,
+                            mr: 1.5
+                          }}
+                        >
+                          <BatteryIcon sx={{ fontSize: 16, color: 'white' }} />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Max Charge
+                          </Typography>
+                          <Typography variant="body2" fontWeight="600">
+                            {vehicle.maximumCharge} kWh
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: '#ff9800',
+                            width: 32,
+                            height: 32,
+                            mr: 1.5
+                          }}
+                        >
+                          <DirectionsCarIcon sx={{ fontSize: 16, color: 'white' }} />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Class
+                          </Typography>
+                          <Typography variant="body2" fontWeight="600">
+                            {getCarClassLabel(vehicle.carClass)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: '#2196f3',
+                            width: 32,
+                            height: 32,
+                            mr: 1.5
+                          }}
+                        >
+                          <ElectricCarIcon sx={{ fontSize: 16, color: 'white' }} />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Owner Email
+                          </Typography>
+                          <Typography variant="body2" fontWeight="600">
+                            {vehicle.ownerEmail || 'N/A'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                  <Box sx={{ mt: 2 }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleEditCar(index)}
+                      startIcon={<EditIcon />}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        color: 'text.primary',
+                        borderColor: 'divider',
+                        '&:hover': {
+                          borderColor: 'primary.main',
+                          color: 'primary.main'
+                        }
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+      
+      {/* Add/Edit Car Dialog */}
+      <Dialog
+        open={addCarDialogOpen}
+        onClose={handleAddCarDialogClose}
+        fullWidth
+        maxWidth="md"
+        sx={{ backdropFilter: 'blur(8px)' }}
+      >
+        <DialogTitle>
+          {editCarIndex !== null ? 'Edit Vehicle' : 'Add Vehicle'}
+        </DialogTitle>
+        <DialogContent>
+          <Box component="form" noValidate autoComplete="off">
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Brand"
+                  name="brand"
+                  value={newCar.brand}
+                  onChange={handleCarInputChange}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Model"
+                  name="model"
+                  value={newCar.model}
+                  onChange={handleCarInputChange}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Maximum Charge (kWh)"
+                  name="maximumCharge"
+                  type="number"
+                  value={newCar.maximumCharge}
+                  onChange={handleCarInputChange}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Car Class"
+                  name="carClass"
+                  select
+                  SelectProps={{
+                    native: true,
+                  }}
+                  value={newCar.carClass}
+                  onChange={handleCarInputChange}
+                  variant="outlined"
+                  required
+                >
+                  <option value="">Select a class</option>
+                  <option value="LUXURY">Luxury</option>
+                  <option value="SPORT">Sport</option>
+                  <option value="FAMILY">Family</option>
+                  <option value="COMPACT">Compact</option>
+                  <option value="SUV">SUV</option>
+                </TextField>
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddCarDialogClose} color="secondary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleAddCar} 
+            variant="contained" 
+            color="primary"
+            startIcon={<AddIcon />}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 3,
+              py: 1.5,
+              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+              '&:hover': {
+                boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+              }
+            }}
+          > 
+            {editCarIndex !== null ? 'Save Changes' : 'Add Vehicle'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
 

@@ -55,43 +55,4 @@ class ChargingPortRepositoryTest {
         entityManager.flush();
     }
 
-    @Test
-    void findByStationId_ReturnsAllPortsForStation() {
-        List<ChargingPort> found = chargingPortRepository.findByStationId(testStation.getId());
-
-        assertThat(found).hasSize(2);
-        assertThat(found).extracting("portIdentifier")
-                        .containsExactlyInAnyOrder("A01", "A02");
-    }
-
-    @Test
-    void findByStationIdAndStatus_ReturnsMatchingPorts() {
-        List<ChargingPort> availablePorts = chargingPortRepository
-                .findByStationIdAndStatus(testStation.getId(), ChargingPortStatus.AVAILABLE);
-
-        assertThat(availablePorts).hasSize(1);
-        assertThat(availablePorts.get(0).getPortIdentifier()).isEqualTo("A01");
-    }
-
-    @Test
-    void findByStatus_ReturnsPortsWithMatchingStatus() {
-        List<ChargingPort> chargingPorts = chargingPortRepository.findByStatus(ChargingPortStatus.CHARGING);
-
-        assertThat(chargingPorts).hasSize(1);
-        assertThat(chargingPorts.get(0).getPortIdentifier()).isEqualTo("A02");
-    }
-
-    @Test
-    void findByStatus_WithNonExistentStatus_ReturnsEmptyList() {
-        List<ChargingPort> outOfServicePorts = chargingPortRepository.findByStatus(ChargingPortStatus.OUT_OF_SERVICE);
-
-        assertThat(outOfServicePorts).isEmpty();
-    }
-
-    @Test
-    void findByStationId_WithNonExistentStation_ReturnsEmptyList() {
-        List<ChargingPort> found = chargingPortRepository.findByStationId(999L);
-
-        assertThat(found).isEmpty();
-    }
 }

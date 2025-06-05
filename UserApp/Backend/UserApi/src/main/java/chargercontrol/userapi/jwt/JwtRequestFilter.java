@@ -1,3 +1,5 @@
+
+
 package chargercontrol.userapi.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -87,3 +89,4 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+

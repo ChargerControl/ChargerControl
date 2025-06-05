@@ -201,6 +201,9 @@ class BookSlotServiceTest {
     void updateBookingStatus_Success() {
         // Arrange
         testBookSlot.setStatus(BookingStatus.PENDING);
+        // Set booking time to now or in the past to allow activation
+        testBookSlot.setBookingTime(LocalDateTime.now().minusMinutes(1)); // Set to 1 minute in the past
+
         when(bookSlotRepository.findById(testBookSlot.getId())).thenReturn(Optional.of(testBookSlot));
         when(bookSlotRepository.save(any(BookSlot.class))).thenReturn(testBookSlot);
 
@@ -210,12 +213,17 @@ class BookSlotServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(BookingStatus.ACTIVE, result.getStatus());
+        verify(bookSlotRepository).save(any(BookSlot.class));
     }
+
 
     @Test
     void updateBookingStatus_FromPendingToActive_Success() {
         // Arrange
         testBookSlot.setStatus(BookingStatus.PENDING);
+        // Set booking time to now or in the past to allow activation
+        testBookSlot.setBookingTime(LocalDateTime.now().minusMinutes(1)); // Set to 1 minute in the past
+
         when(bookSlotRepository.findById(testBookSlot.getId())).thenReturn(Optional.of(testBookSlot));
         when(bookSlotRepository.save(any(BookSlot.class))).thenReturn(testBookSlot);
 
@@ -226,19 +234,23 @@ class BookSlotServiceTest {
         assertEquals(BookingStatus.ACTIVE, result.getStatus());
     }
 
+
     @Test
-    void updateBookingStatus_FromPendingToCompleted_Success() {
+    void updateBookingStatus_FromPendingToCompleted_ThrowsException() {
         // Arrange
         testBookSlot.setStatus(BookingStatus.PENDING);
         when(bookSlotRepository.findById(testBookSlot.getId())).thenReturn(Optional.of(testBookSlot));
-        when(bookSlotRepository.save(any(BookSlot.class))).thenReturn(testBookSlot);
+        // No need to mock save, as it should not be called in this case
 
-        // Act
-        BookSlot result = bookSlotService.updateBookingStatus(testBookSlot.getId(), BookingStatus.COMPLETED);
+        // Act & Assert
+        assertThrows(RuntimeException.class,
+                () -> bookSlotService.updateBookingStatus(testBookSlot.getId(), BookingStatus.COMPLETED),
+                "Expected RuntimeException when transitioning from PENDING to COMPLETED");
 
-        // Assert
-        assertEquals(BookingStatus.COMPLETED, result.getStatus());
+        // Optionally, verify that the save method was not called
+        verify(bookSlotRepository, never()).save(any(BookSlot.class));
     }
+
 
     @Test
     void updateBookingStatus_FromActiveToCompleted_CalculatesEnergyUsed() {

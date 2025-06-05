@@ -50,6 +50,7 @@ public class CarService {
         existingCar.setBrand(carDetails.getBrand());
         existingCar.setMaximumCharge(carDetails.getMaximumCharge());
         existingCar.setCarClass(carDetails.getCarClass());
+        existingCar.setImageUrl(carDetails.getImageUrl()); // Adicionado o campo imageUrl
         // The owner of the car should not be changed via this method.
         // If car ownership transfer is a feature, it should be handled by a separate,
         // dedicated service method.
@@ -64,4 +65,8 @@ public class CarService {
         }
         carRepository.deleteById(carId);
     }
+
+    public List<Car> getAllCars() {
+        return carRepository.findAll();
+    }   
 }

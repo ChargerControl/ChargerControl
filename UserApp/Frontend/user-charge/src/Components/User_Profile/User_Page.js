@@ -14,18 +14,157 @@ import {
   IconButton,
   Badge,
   Snackbar,
-  Alert
+  Alert,
+  Card,
+  CardContent,
+  Chip,
+  useTheme
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
   Close as CloseIcon,
   PhotoCamera as PhotoCameraIcon,
-  Notifications as NotificationsIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  LocationOn as LocationIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
+import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import Cars from './Cars';
+import ChargerInformation from './ChargerInformation';
+import UserStats from './UserStats';
+
+// Tema harmonizado com navbar e home
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#76ff03',
+      light: '#b2ff59',
+      dark: '#64dd17',
+    },
+    secondary: {
+      main: '#1a1a1a',
+      light: '#333333',
+      dark: '#000000',
+    },
+    background: {
+      default: '#0a0a0a',
+      paper: 'rgba(26, 26, 26, 0.9)',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+    },
+  },
+});
+
+// Componentes estilizados
+const NeonCard = styled(Card)(({ theme }) => ({
+  background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(51, 51, 51, 0.8) 100%)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(118, 255, 3, 0.2)',
+  borderRadius: '16px',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(118, 255, 3, 0.1)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    borderColor: 'rgba(118, 255, 3, 0.4)',
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(118, 255, 3, 0.2)',
+  },
+}));
+
+const NeonButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(45deg, #76ff03 30%, #64dd17 90%)',
+  color: '#000000',
+  borderRadius: '12px',
+  fontWeight: 600,
+  textTransform: 'none',
+  boxShadow: '0 4px 15px rgba(118, 255, 3, 0.4)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #64dd17 30%, #76ff03 90%)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 6px 20px rgba(118, 255, 3, 0.6)',
+  },
+}));
+
+const OutlineButton = styled(Button)(({ theme }) => ({
+  borderColor: '#76ff03',
+  color: '#76ff03',
+  borderRadius: '12px',
+  fontWeight: 600,
+  textTransform: 'none',
+  borderWidth: '2px',
+  background: 'rgba(26, 26, 26, 0.8)',
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    backgroundColor: 'rgba(118, 255, 3, 0.1)',
+    borderColor: '#76ff03',
+    borderWidth: '2px',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 15px rgba(118, 255, 3, 0.3)',
+  },
+}));
+
+const NeonTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    '& fieldset': {
+      borderColor: 'rgba(118, 255, 3, 0.3)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(118, 255, 3, 0.5)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#76ff03',
+      boxShadow: '0 0 10px rgba(118, 255, 3, 0.3)',
+    },
+  },
+  '& .MuiInputBase-input': {
+    color: '#ffffff',
+  },
+  '& .MuiInputLabel-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+}));
+
+const GlowAvatar = styled(Avatar)(({ theme }) => ({
+  border: '3px solid #76ff03',
+  boxShadow: '0 0 20px rgba(118, 255, 3, 0.5), 0 8px 32px rgba(0, 0, 0, 0.3)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 0 30px rgba(118, 255, 3, 0.7), 0 12px 40px rgba(0, 0, 0, 0.4)',
+  },
+}));
+
+const NeonTabs = styled(Tabs)(({ theme }) => ({
+  '& .MuiTab-root': {
+    textTransform: 'none',
+    fontWeight: 600,
+    fontSize: '1rem',
+    color: 'rgba(255, 255, 255, 0.7)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      color: '#76ff03',
+    },
+  },
+  '& .Mui-selected': {
+    color: '#76ff03 !important',
+  },
+  '& .MuiTabs-indicator': {
+    backgroundColor: '#76ff03',
+    height: '3px',
+    borderRadius: '2px',
+    boxShadow: '0 0 10px rgba(118, 255, 3, 0.5)',
+  },
+}));
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -46,8 +185,14 @@ function TabPanel(props) {
   );
 }
 
+function getTabFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const tab = parseInt(params.get('tab'), 10);
+  return isNaN(tab) ? 0 : tab;
+}
+
 function UserProfile() {
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(getTabFromUrl());
   const [editMode, setEditMode] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   
@@ -56,8 +201,8 @@ function UserProfile() {
     name: 'Maria Silva',
     email: 'maria.silva@example.com',
     phone: '+351 912 345 678',
-    location: 'Lisboa, Portugal',
-    joinDate: 'Outubro 2023'
+    location: 'Lisbon, Portugal',
+    joinDate: 'October 2023'
   });
 
   const [editData, setEditData] = useState({...userData});
@@ -78,6 +223,15 @@ function UserProfile() {
         name: userName
       }));
     }
+  }, []);
+
+  useEffect(() => {
+    // Atualiza a aba se o parâmetro da URL mudar (ex: navegação interna)
+    const onPopState = () => {
+      setTabValue(getTabFromUrl());
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   const handleTabChange = (event, newValue) => {
@@ -102,7 +256,7 @@ function UserProfile() {
   const handleSaveProfile = () => {
     setUserData({...editData});
     setEditMode(false);
-    setSuccessMessage("Perfil atualizado com sucesso!");
+    setSuccessMessage("Profile updated successfully!");
     
     setTimeout(() => {
       setSuccessMessage(null);
@@ -115,25 +269,16 @@ function UserProfile() {
     window.dispatchEvent(new Event("storage"));
   };
 
-  const profileImage = require("../../Images/zezinho.png");
-
+  const profileImage = require("../../Images/Placeholder_Person.jpg");
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        width: '100%',
-        position: 'relative',
-        overflow: 'auto',
-        pb: 5
-      }}
-    >
+    <ThemeProvider theme={darkTheme}>
       <Box
         sx={{
-          height: '250px',
-          width: '100%',
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #2a2a2a 70%, #1a1a1a 100%)',
+          pb: 4,
           position: 'relative',
-          overflow: 'hidden',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -141,172 +286,158 @@ function UserProfile() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            background: 'radial-gradient(ellipse at center, rgba(118, 255, 3, 0.05) 0%, transparent 70%)',
             zIndex: 1,
           },
         }}
       >
-        
-        
-        
-      </Box>
-
-      <Container maxWidth="md" sx={{ mt: -10, position: 'relative', zIndex: 2 }}>
-        {/* Profile Header Card */}
-        <Paper
-          elevation={8}
+        {/* Header Background */}
+        <Box
           sx={{
-            p: { xs: 3, sm: 4 },
-            borderRadius: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            mb: 3,
+            height: '200px',
+            width: '100%',
+            position: 'relative',
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 26, 0.8) 100%)',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background: 'linear-gradient(90deg, transparent, #76ff03, transparent)',
+            },
           }}
-        >
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} sm="auto" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        />
+
+        <Container maxWidth="lg" sx={{ mt: -12, position: 'relative', zIndex: 2 }}>
+          {/* Profile Header Card */}
+          <NeonCard sx={{ mb: 3, overflow: 'visible' }}>
+            <CardContent sx={{ p: 4 }}>
+              <Grid container spacing={3} alignItems="center">
+                <Grid item xs={12} sm="auto" sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    badgeContent={
+                      <IconButton
+                        size="small"
+                        sx={{ 
+                          bgcolor: '#76ff03', 
+                          color: '#000000',
+                          boxShadow: '0 0 15px rgba(118, 255, 3, 0.5)',
+                          '&:hover': { 
+                            bgcolor: '#64dd17',
+                            transform: 'scale(1.1)',
+                          }
+                        }}
+                      >
+                        <PhotoCameraIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  >
+                    <GlowAvatar
+                      src={profileImage}
+                      alt={userData.name}
+                      sx={{ 
+                        width: 120,
+                        height: 120,
+                      }}
+                    />
+                  </Badge>
+                </Grid>
                 
-              >
-                <Avatar
-                  src={profileImage}
-                  alt={userData.name}
-                  sx={{ 
-                    width: { xs: 100, sm: 120 }, 
-                    height: { xs: 100, sm: 120 },
-                    border: '4px solid white'
-                  }}
-                />
-              </Badge>
-            </Grid>
-            
-            <Grid item xs={12} sm>
-              <Box sx={{ pl: { sm: 2 }, textAlign: { xs: 'center', sm: 'left' } }}>
-                <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-                  {userData.name}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {userData.email}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Join date: {userData.joinDate}
-                </Typography>
+                <Grid item xs={12} sm>
+                  <Box sx={{ pl: { sm: 3 }, textAlign: { xs: 'center', sm: 'left' } }}>
+                    <Typography 
+                      variant="h4" 
+                      component="h1" 
+                      fontWeight="700" 
+                      gutterBottom
+                      sx={{ 
+                        color: 'white',
+                        textShadow: '0 0 10px rgba(118, 255, 3, 0.3)'
+                      }}
+                    >
+                      {userData.name}
+                    </Typography>
+                  </Box>
+                </Grid>
+              
+              </Grid>
+            </CardContent>
+          </NeonCard>
+
+          {/* Main Content */}
+          <NeonCard>
+            <CardContent sx={{ p: 0 }}>
+              {/* Tabs */}
+              <Box sx={{ px: 4, pt: 3 }}>
+                <NeonTabs 
+                  value={tabValue} 
+                  onChange={handleTabChange} 
+                  variant="scrollable"
+                  scrollButtons="auto"
+                >
+                  <Tab label="Charger Information" />
+                  <Tab label="My Vehicles" />
+                  <Tab label="User Stats" />
+                </NeonTabs>
+                <Divider sx={{ mt: 2, backgroundColor: 'rgba(118, 255, 3, 0.2)' }} />
               </Box>
-            </Grid>
-            
-            
-          </Grid>
-        </Paper>
 
-        {/* Main Content Section */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            borderRadius: 2,
-            backgroundColor: 'white',
-          }}
+              {/* Personal Information Tab */}
+             
+
+              {/* Charger Information Tab */}
+              <TabPanel value={tabValue} index={0}>
+                <Box sx={{ p: 4 }}>
+                  <ChargerInformation />
+                </Box>
+              </TabPanel>
+
+              {/* Cars Tab */}
+              <TabPanel value={tabValue} index={1}>
+                <Box sx={{ p: 4 }}>
+                  <Cars />
+                </Box>
+              </TabPanel>
+
+              {/* User Stats Tab */}
+              <TabPanel value={tabValue} index={2}>
+                <Box sx={{ p: 4 }}>
+                  <UserStats />
+                </Box>
+              </TabPanel>
+            </CardContent>
+          </NeonCard>
+        </Container>
+
+        {/* Success Message */}
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={3000}
+          onClose={() => setSuccessMessage(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {/* Tabs Navigation */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-            <Tabs 
-              value={tabValue} 
-              onChange={handleTabChange} 
-              aria-label="profile tabs"
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab label="Personal Information" />
-              <Tab label="Charger information" />
-              <Tab label="Cars" />
-            </Tabs>
-          </Box>
-
-          
-          <TabPanel value={tabValue} index={0}>
-            <Grid container spacing={10}>
-              
-
-              <Grid item xs={20} md={10}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Name
-                </Typography>
-                
-                  <Typography variant="body1" gutterBottom>
-                    {userData.name}
-                  </Typography>
-     
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Email
-                </Typography>
-                
-                  <Typography variant="body1" gutterBottom>
-                    {userData.email}
-                  </Typography>
-              
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Telefone
-                </Typography>
-                
-                  <Typography variant="body1" gutterBottom>
-                    {userData.phone}
-                  </Typography>
-            
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Location
-                </Typography>
-                {editMode ? (
-                  <TextField
-                    name="location"
-                    value={editData.location}
-                    onChange={handleInputChange}
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                  />
-                ) : (
-                  <Typography variant="body1" gutterBottom>
-                    {userData.location}
-                  </Typography>
-                )}
-              </Grid>
-
-              
-              
-            </Grid>
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={1}>
-            <Box sx={{ my: 4, textAlign: 'center' }}>
-              <Typography variant="h6" color="text.secondary">
-                //ir buscar charger info para aqui
-              </Typography>
-              
-            </Box>
-          </TabPanel>
-
-   
-          <TabPanel value={tabValue} index={2}>
-            <Grid container spacing={3}>
-              <Cars></Cars>
-            </Grid>
-          </TabPanel>
-        </Paper>
-
-        
-      </Container>
-    </Box>
+          <Alert 
+            onClose={() => setSuccessMessage(null)} 
+            severity="success" 
+            variant="filled"
+            sx={{ 
+              borderRadius: 2,
+              backgroundColor: '#76ff03',
+              color: '#000000',
+              '& .MuiAlert-icon': {
+                color: '#000000',
+              }
+            }}
+          >
+            {successMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </ThemeProvider>
   );
 }
 
