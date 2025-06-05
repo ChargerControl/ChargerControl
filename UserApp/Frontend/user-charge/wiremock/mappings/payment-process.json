@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/api/payment/process",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/json"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true"
+    },
+    "jsonBody": {
+      "success": true,
+      "transactionId": "txn_{{randomValue type='UUID'}}",
+      "amount": "{{jsonPath request.body '$.amount'}}",
+      "currency": "{{jsonPath request.body '$.currency'}}",
+      "cardLast4": "1111",
+      "status": "completed",
+      "timestamp": "{{now}}",
+      "message": "Pagamento processado com sucesso",
+      "receipt": {
+        "receiptId": "rcpt_{{randomValue type='ALPHANUMERIC' length=12}}",
+        "description": "{{jsonPath request.body '$.description'}}"
+      }
+    }
+  }
+}
