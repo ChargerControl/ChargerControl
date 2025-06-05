@@ -90,7 +90,7 @@ function Cars() {
   };
 
   // Default car image for all vehicles
-  const DEFAULT_CAR_IMAGE = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgaNYdtgtr9vFBJx5cJasA1xFzgI7fhrSw_waHyKtQV2JOOVo6LW9x6Px2O-T7QMDv1EdnPeuu78obgWnhoiEFapmPURKvXAnp_NXClYZbwwiFmG8DJDGEBTCX5K3okFQtMUvHHxwzjjsaD/s640/Ibiza2.jpg';
+  const DEFAULT_CAR_IMAGE = 'https://www.shutterstock.com/image-vector/car-logo-icon-emblem-design-600nw-473088025.jpg';
 
   // Function to decode JWT token
   const decodeJWT = (token) => {

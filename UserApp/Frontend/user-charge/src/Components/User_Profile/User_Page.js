@@ -269,7 +269,7 @@ function UserProfile() {
     window.dispatchEvent(new Event("storage"));
   };
 
-  const profileImage = require("../../Images/zezinho.png");
+  const profileImage = require("../../Images/Placeholder_Person.jpg");
 
   return (
     <ThemeProvider theme={darkTheme}>
