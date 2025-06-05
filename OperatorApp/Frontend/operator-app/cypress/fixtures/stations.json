@@ -1,0 +1,35 @@
+[
+    {
+        "id": 1,
+        "name": "Station 1",
+        "location": "Aveiro Center",
+        "chargingType": "AC_STANDARD",
+        "power": 22,
+        "latitude": 40.6405,
+        "longitude": -8.6538,
+        "available": true,
+        "totalPorts": 2
+    },
+    {
+        "id": 2,
+        "name": "Station 2",
+        "location": "Lisbon Airport",
+        "chargingType": "DC_FAST",
+        "power": 50,
+        "latitude": 38.7756,
+        "longitude": -9.1354,
+        "available": false,
+        "totalPorts": 4
+    },
+    {
+        "id": 3,
+        "name": "Station 3",
+        "location": "Porto Plaza",
+        "chargingType": "DC_ULTRA_FAST",
+        "power": 150,
+        "latitude": 41.1495,
+        "longitude": -8.6108,
+        "available": true,
+        "totalPorts": 3
+    }
+]

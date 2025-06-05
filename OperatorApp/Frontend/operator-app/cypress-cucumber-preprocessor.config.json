@@ -1,0 +1,8 @@
+{
+    "stepDefinitions": [
+        "cypress/support/step_definitions/**/*.{js,ts}"
+    ],
+    "messages": {
+        "enabled": true
+    }
+}

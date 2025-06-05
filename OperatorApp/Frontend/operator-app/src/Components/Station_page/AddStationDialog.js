@@ -157,7 +157,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth data-cy="add-station-dialog">
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <AddCircleOutline />
@@ -168,12 +168,12 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
       </DialogTitle>
       <DialogContent>
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{ mb: 3 }} data-cy="validation-error">
             {error}
           </Alert>
         )}
         {success && (
-          <Alert severity="success" sx={{ mb: 3 }}>
+          <Alert severity="success" sx={{ mb: 3 }} data-cy="success-message">
             Estação criada com sucesso!
           </Alert>
         )}
@@ -191,6 +191,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 onChange={(e) => onStationChange('name', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
+                data-cy="station-name-input"
                 error={!newStation.name && error}
                 helperText={!newStation.name && error ? 'Campo obrigatório' : ''}
                 InputProps={{
@@ -211,6 +212,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 onChange={(e) => onStationChange('location', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
+                data-cy="station-location-input"
                 error={!newStation.location && error}
                 helperText={!newStation.location && error ? 'Endereço da estação (obrigatório)' : ''}
                 InputProps={{
@@ -235,6 +237,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                   value={newStation.type}
                   onChange={(_e, value) => value && onStationChange('type', value)}
                   sx={{ width: '100%', flexWrap: 'wrap' }}
+                  data-cy="station-charging-type-select"
                 >
                   <ToggleButton value="ac3" sx={{ flex: 1, minWidth: 120 }}>AC Lento (3kW)</ToggleButton>
                   <ToggleButton value="ac7" sx={{ flex: 1, minWidth: 120 }}>AC Lento (7kW)</ToggleButton>
@@ -262,6 +265,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 onChange={(e) => onStationChange('power', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
+                data-cy="station-power-input"
                 error={(!newStation.power || newStation.power <= 0) && error}
                 helperText={(!newStation.power || newStation.power <= 0) && error ? 'Potência em kW (obrigatório)' : ''}
                 inputProps={{ min: 1 }}
@@ -285,6 +289,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 onChange={(e) => onStationChange('totalPorts', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
+                data-cy="station-total-ports-input"
                 error={(!newStation.totalPorts || newStation.totalPorts <= 0) && error}
                 helperText={(!newStation.totalPorts || newStation.totalPorts <= 0) && error ? 'Campo obrigatório' : ''}
                 inputProps={{ min: 1 }}
@@ -300,6 +305,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
                 onChange={(e) => onStationChange('coordinates', e.target.value)}
                 sx={{ minHeight: 56 }}
                 required
+                data-cy="station-coordinates-input"
                 error={!newStation.coordinates && error}
                 helperText={!newStation.coordinates && error ? 'Campo obrigatório. Formato: latitude, longitude' : 'Formato: latitude, longitude'}
               />
@@ -316,6 +322,7 @@ const AddStationDialog = ({ open, onClose, newStation, onStationChange, onSave }
           variant="contained" 
           sx={{ backgroundColor: '#2e7d32' }}
           disabled={loading}
+          data-cy="save-station-button"
           startIcon={loading ? <CircularProgress size={20} /> : <AddCircleOutline />}>
           {loading ? 'Registrando...' : 'Registrar Estação'}
         </Button>

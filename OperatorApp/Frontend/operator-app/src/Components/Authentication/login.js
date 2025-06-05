@@ -139,6 +139,7 @@ function Login() {
             onChange={(e) => handleSetEmail(e.target.value)}
             required
             autoFocus
+            data-cy="email-input"
             sx={{ mb: 2 }}
           />
           
@@ -151,6 +152,7 @@ function Login() {
             value={password}
             onChange={(e) => handleSetPassword(e.target.value)}
             required
+            data-cy="password-input"
             sx={{ mb: 2 }}
             InputProps={{
               endAdornment: (
@@ -177,6 +179,7 @@ function Login() {
             fullWidth
             variant="contained"
             size="large"
+            data-cy="login-button"
             sx={{ 
               mt: 1, 
               py: 1.5,

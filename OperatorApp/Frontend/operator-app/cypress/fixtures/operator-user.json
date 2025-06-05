@@ -1,0 +1,7 @@
+{
+    "id": 1,
+    "email": "operator@example.com",
+    "name": "Test Operator",
+    "role": "OPERATOR",
+    "token": "fake-jwt-token-for-testing"
+}

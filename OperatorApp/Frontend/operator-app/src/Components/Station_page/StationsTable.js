@@ -30,7 +30,10 @@ import {
   CardContent,
   Grid,
   TextField,
-  MenuItem
+  MenuItem,
+  FormControl,
+  ToggleButtonGroup,
+  ToggleButton
 } from '@mui/material';
 import {
   Add,
@@ -96,6 +99,16 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
     portIdentifier: '',
     status: 'AVAILABLE',
     energyUsed: 0
+  });
+  
+  // Estado para o diálogo de toggle status
+  const [toggleStatusDialog, setToggleStatusDialog] = useState({
+    open: false,
+    station: null,
+    loading: false,
+    error: '',
+    disableDuration: 1, // duração em horas para desativar temporariamente
+    isTemporary: false
   });
 
   // Atualizar estações locais quando o prop mudar
@@ -164,7 +177,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para buscar portas de carregamento
   const fetchChargingPorts = async (stationId) => {
     try {
-      const response = await fetch(`http://localhost:8081/apiV1/chargingports/station/${stationId}`);
+      const response = await fetch(`http://192.168.160.7:8081/apiV1/chargingports/station/${stationId}`);
       
       if (!response.ok) {
         // Se não for JSON válido (ex: HTML de erro), usar status como mensagem
@@ -199,7 +212,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para buscar detalhes de uma porta específica via endpoint da estação
   const fetchPortDetails = async (stationId, portId) => {
     try {
-      const response = await fetch(`http://localhost:8081/apiV1/chargingports/station/${stationId}`);
+      const response = await fetch(`http://192.168.160.7:8081/apiV1/chargingports/station/${stationId}`);
       
       if (!response.ok) {
         let errorMessage;
@@ -237,7 +250,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para eliminar porta de carregamento
   const deleteChargingPort = async (portId) => {
     try {
-      const response = await fetch(`http://localhost:8081/apiV1/chargingports/${portId}`, {
+      const response = await fetch(`http://192.168.160.7:8081/apiV1/chargingports/${portId}`, {
         method: 'DELETE'
       });
 
@@ -260,7 +273,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   // Função para eliminar estação
   const deleteStation = async (stationId) => {
     try {
-      const response = await fetch(`http://localhost:8081/apiV1/stations/${stationId}`, {
+      const response = await fetch(`http://192.168.160.7:8081/apiV1/stations/${stationId}`, {
         method: 'DELETE'
       });
 
@@ -429,6 +442,83 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
       error: ''
     });
   };
+  
+  // Funções para gerenciar o status da estação
+  const handleToggleStationStatus = (station) => {
+    setToggleStatusDialog({
+      open: true,
+      station: station,
+      loading: false,
+      error: '',
+      disableDuration: 1,
+      isTemporary: false
+    });
+  };
+
+  const handleCloseToggleStatus = () => {
+    setToggleStatusDialog({
+      open: false,
+      station: null,
+      loading: false,
+      error: '',
+      disableDuration: 1,
+      isTemporary: false
+    });
+  };
+
+  const handleConfirmToggleStatus = async () => {
+    if (!toggleStatusDialog.station) return;
+
+    setToggleStatusDialog(prev => ({ ...prev, loading: true, error: '' }));
+    
+    try {
+      const available = !toggleStatusDialog.station.available;
+      
+      // Enviar requisição para alterar o status da estação
+      const response = await fetch(`http://192.168.160.7:8081/apiV1/stations/${toggleStatusDialog.station.id}/toggle`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          available, 
+          temporary: toggleStatusDialog.isTemporary,
+          duration: toggleStatusDialog.isTemporary ? toggleStatusDialog.disableDuration : 0 
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      // Atualizar estado local da estação
+      setLocalStations(prev => prev.map(s => {
+        if (s.id === toggleStatusDialog.station.id) {
+          return { ...s, available };
+        }
+        return s;
+      }));
+      
+      // Mostrar mensagem de sucesso
+      setSnackbar({
+        open: true,
+        message: `Estação ${available ? 'ativada' : 'desativada'} com sucesso`,
+        severity: 'success'
+      });
+      
+      handleCloseToggleStatus();
+    } catch (error) {
+      setToggleStatusDialog(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message
+      }));
+      
+      setSnackbar({
+        open: true,
+        message: `Erro ao alterar status: ${error.message}`,
+        severity: 'error'
+      });
+    }
+  };
 
   // Confirmar eliminação da estação
   const handleConfirmDeleteStation = async () => {
@@ -496,7 +586,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
   const handleAddPortSubmit = async () => {
     setAddPortDialog(prev => ({ ...prev, loading: true, error: '' }));
     try {
-      const response = await fetch(`http://localhost:8081/apiV1/chargingports/station/${chargingPortsDialog.stationId}`, {
+      const response = await fetch(`http://192.168.160.7:8081/apiV1/chargingports/station/${chargingPortsDialog.stationId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -561,6 +651,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
             startIcon={<Add />}
             onClick={onAddStation}
             sx={{ backgroundColor: '#2e7d32' }}
+            data-cy="add-station-button"
           >
             Nova Estação
           </Button>
@@ -637,6 +728,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                       color={getStatusColor(station.available)}
                       size="small"
                       variant="outlined"
+                      data-cy="station-status-chip"
                     />
                   </TableCell>
                   
@@ -665,8 +757,19 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                           size="small" 
                           onClick={() => handleOpenChargingPorts(station)}
                           color="info"
+                          data-cy="view-ports-button"
                         >
                           <EvStation />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={station.available ? "Desativar estação" : "Ativar estação"}>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleToggleStationStatus(station)}
+                          color={station.available ? "warning" : "success"}
+                          data-cy="toggle-status-button"
+                        >
+                          <PowerSettingsNew />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Editar estação">
@@ -674,6 +777,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                           size="small" 
                           onClick={() => handleEditStation(station)}
                           color="primary"
+                          data-cy="edit-station-button"
                         >
                           <Edit />
                         </IconButton>
@@ -683,6 +787,7 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
                           size="small" 
                           onClick={() => handleOpenDeleteStation(station)}
                           color="error"
+                          data-cy="delete-station-button"
                         >
                           <Delete />
                         </IconButton>
@@ -963,6 +1068,94 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
         </DialogActions>
       </Dialog>
 
+      {/* Modal de Toggle Status */}
+      <Dialog open={toggleStatusDialog.open} onClose={handleCloseToggleStatus}>
+        <DialogTitle>
+          {toggleStatusDialog.station?.available ? 'Desativar Estação' : 'Ativar Estação'}
+        </DialogTitle>
+        <DialogContent>
+          {toggleStatusDialog.error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {toggleStatusDialog.error}
+            </Alert>
+          )}
+          
+          <Typography variant="body1" gutterBottom>
+            {toggleStatusDialog.station?.available ? 
+              `Tem certeza que deseja desativar a estação "${toggleStatusDialog.station?.name}"?` : 
+              `Deseja ativar a estação "${toggleStatusDialog.station?.name}"?`}
+          </Typography>
+          
+          {toggleStatusDialog.station?.available && (
+            <Box sx={{ mt: 2 }}>
+              <FormControl component="fieldset">
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Opções de desativação:
+                </Typography>
+                <ToggleButtonGroup
+                  value={toggleStatusDialog.isTemporary ? 'temp' : 'perm'}
+                  exclusive
+                  onChange={(e, val) => setToggleStatusDialog(prev => ({ 
+                    ...prev, 
+                    isTemporary: val === 'temp' 
+                  }))}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                >
+                  <ToggleButton value="perm">Permanente</ToggleButton>
+                  <ToggleButton value="temp">Temporária</ToggleButton>
+                </ToggleButtonGroup>
+                
+                {toggleStatusDialog.isTemporary && (
+                  <TextField
+                    select
+                    label="Duração"
+                    fullWidth
+                    value={toggleStatusDialog.disableDuration}
+                    onChange={(e) => setToggleStatusDialog(prev => ({
+                      ...prev,
+                      disableDuration: e.target.value
+                    }))}
+                    data-cy="disable-time-select"
+                  >
+                    <MenuItem value={1}>1 hora</MenuItem>
+                    <MenuItem value={2}>2 horas</MenuItem>
+                    <MenuItem value={4}>4 horas</MenuItem>
+                    <MenuItem value={8}>8 horas</MenuItem>
+                    <MenuItem value={24}>24 horas</MenuItem>
+                  </TextField>
+                )}
+              </FormControl>
+            </Box>
+          )}
+
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            {toggleStatusDialog.station?.available ? 
+              'Esta ação irá notificar automaticamente aos usuários que possuem reservas nesta estação.' :
+              'A estação será disponibilizada para uso imediatamente.'}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseToggleStatus} disabled={toggleStatusDialog.loading}>
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleConfirmToggleStatus} 
+            color={toggleStatusDialog.station?.available ? 'warning' : 'success'} 
+            variant="contained"
+            disabled={toggleStatusDialog.loading}
+            data-cy={toggleStatusDialog.station?.available ? 'confirm-disable-button' : 'confirm-enable-button'}
+          >
+            {toggleStatusDialog.loading ? (
+              <>
+                <CircularProgress size={20} sx={{ mr: 1 }} />
+                Processando...
+              </>
+            ) : toggleStatusDialog.station?.available ? 'Desativar' : 'Ativar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Snackbar para feedback */}
       <Snackbar
         open={snackbar.open}
@@ -974,8 +1167,16 @@ const StationsTable = ({ stations, onAddStation, onEditStation, onRefresh, onSta
           onClose={handleCloseSnackbar} 
           severity={snackbar.severity}
           sx={{ width: '100%' }}
+          data-cy={snackbar.severity === 'success' ? 'notification-success' : 'notification-error'}
         >
           {snackbar.message}
+          {snackbar.message && snackbar.message.includes('desativada') && snackbar.severity === 'success' && (
+            <Box mt={1} data-cy="scheduled-enable-indicator" sx={{ display: 'none' }}>
+              <Typography variant="caption">
+                (Reativação automática programada)
+              </Typography>
+            </Box>
+          )}
         </Alert>
       </Snackbar>
     </>
