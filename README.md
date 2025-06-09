@@ -15,17 +15,21 @@
 ## Project Bookmarks
 - [Project Board](https://21tqs2425.atlassian.net/jira/software/projects/SCRUM/boards/1)
 
-## SonarQube run
 
+## Links da VM
 
- ```bash 
-mvn clean verify sonar:sonar \
-  -Dsonar.projectKey=ChargeControl \
-  -Dsonar.projectName='ChargeControl' \
-  -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.token=sqp_ea1bbf0b75f7d7de981c00e656fbfa6f911e3975
- ``` 
+- UserApp: http://192.168.160.7:3000
 
-http://localhost:9000/tutorials?id=ChargerControl&selectedTutorial=local
+- OperatorApp: http://192.168.160.7:3001/operator
+ 
+- SonarQube: http://192.168.160.7:9000
 
-ou dando commit para a main (ter ngrok a rodar)
+- Swagger UserApp: http://192.168.160.7:8080/swagger-ui/index.html
+
+- Swagger OperatorApp: http://192.168.160.7:8081/swagger-ui/index.html
+
+## Updates
+
+- New feature: when selecting a station on the map, a "Navigate" button now appears, redirecting to Google Maps and providing directions from the user's current location to the selected station (this was implemented last Thursday, but we forgot to show it during the live demo).
+- Final report and manual QA have been submitted.
+- New tests implemented.
