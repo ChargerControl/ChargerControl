@@ -27,3 +27,9 @@
 - Swagger UserApp: http://192.168.160.7:8080/swagger-ui/index.html
 
 - Swagger OperatorApp: http://192.168.160.7:8081/swagger-ui/index.html
+
+## Updates
+
+- New feature: when selecting a station on the map, a "Navigate" button now appears, redirecting to Google Maps and providing directions from the user's current location to the selected station (this was implemented last Thursday, but we forgot to show it during the live demo).
+- Final report and manual QA have been submitted.
+- New tests implemented.
